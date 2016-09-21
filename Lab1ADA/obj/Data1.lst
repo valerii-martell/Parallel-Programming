@@ -1,0 +1,254 @@
+GNAT GPL 2016 (20160515-49)
+Copyright 1992-2016, Free Software Foundation, Inc.
+
+Compiling: E:\\Lab1ADA\src\data.adb
+Source file time stamp: 2016-09-21 18:50:48
+Compiled at: 2016-09-21 22:19:25
+
+     1. with Ada.Text_IO, Ada.Integer_Text_IO, Ada.Numerics.Discrete_Random, Ada.Streams;
+     2. use Ada.Text_IO, Ada.Integer_Text_IO, Ada.Streams;
+     3.
+     4. ---------Data package body--------------
+     5. package body Data is
+     6.
+     7.    --Multiply two matrices
+     8.    function MultMatr (A, B : Matrix) return Matrix is
+     9.       Cell : Integer;
+    10.       Result : Matrix;
+    11.    begin
+    12.       for i in 1..N loop
+    13.       for j in 1..N loop
+    14.       Cell := 0;
+    15.       for k in 1..N loop
+    16.       Cell := Cell + A(i,k)*B(k,j);
+    17.       end loop;
+    18.       Result(i,j):= Cell;
+    19.       end loop;
+    20.       end loop;
+    21.       return Result;
+    22.    end MultMatr;
+    23.
+    24.    --Transposition matrix
+    25.    function Transp (A : Matrix) return Matrix is
+    26.       Result : Matrix;
+    27.    begin
+    28.       for i in 1..N loop
+    29.       for j in 1..N loop
+    30.       Result(i,j) := A(j,i);
+    31.       end loop;
+    32.       end loop;
+    33.       return Result;
+    34.    end Transp;
+    35.
+    36.    --Search minimum element in vector
+    37.    function SearchVectMin(A: Vect) return Integer is
+    38.       min : Integer;
+    39.    begin
+    40.       min := A(1);
+    41.       for i in 1..N loop
+    42.       if A(i) < min then
+    43.       min := A(i);
+    44.       end if;
+    45.       end loop;
+    46.       return min;
+    47.    end SearchVectMin;
+    48.
+    49.    --Adding two matrices
+    50.    function AddMatr(A, B : Matrix) return Matrix is
+    51.       Result : Matrix;
+    52.    begin
+    53.       for i in 1..N loop
+    54.       for j in 1..N loop
+    55.       Result(i,j) := A(i,j) + B(i,j);
+    56.       end loop;
+    57.       end loop;
+    58.       return Result;
+    59.    end AddMatr;
+    60.
+    61.    --Multiply vector and matrix
+    62.    function MultVectMatr(A : Vect; B : Matrix) return Vect is
+    63.       Cell : Integer;
+    64.       Result : Vect;
+    65.    begin
+    66.       for j in 1..N loop
+    67.       Cell := 0;
+    68.       for k in 1..N loop
+    69.       Cell := Cell + A(k)*B(k,j);
+    70.       end loop;
+    71.       Result(j):= Cell;
+    72.       end loop;
+    73.       return Result;
+    74.    end MultVectMatr;
+    75.
+    76.    --Sort elements of vector from low to high
+    77.    function SortVect(A : Vect) return Vect is
+    78.       m : Integer;
+    79.       Result: Vect;
+    80.    begin
+    81.       for i in 1..N loop
+    82.       Result(i):= A(i);
+    83.       end loop;
+    84.       for i in reverse 1..N loop
+    85.       for j in 1..(i-1) loop
+    86.       if Result(j) > Result(j+1) then
+    87.       m := Result(j);
+    88.       Result(j):=Result(j+1);
+    89.       Result(j+1):=m;
+    90.       end if;
+    91.       end loop;
+    92.       end loop;
+    93.       return Result;
+    94.    end SortVect;
+    95.
+    96.    --Multiply number and matrix
+    97.    function MultNumb(a: Integer; MA: Matrix) return Matrix is
+    98.       Result : Matrix;
+    99.    begin
+   100.       for i in 1..N loop
+   101.       for j in 1..N loop
+   102.       Result(i,j):= a*MA(i,j);
+   103.       end loop;
+   104.       end loop;
+   105.       return Result;
+   106.    end MultNumb;
+   107.
+   108.    --F1: MC = MIN(A)*(MA*MD)
+   109.    procedure F1(A: in Vect; MA, MD: in Matrix; MC : out Matrix) is
+   110.    begin
+   111.       MC := MultNumb(SearchVectMin(A),MultMatr(MA,MD));
+   112.    end F1;
+   113.
+   114.    --F2: MK = TRANS(MA)*TRANS(MB*MM)+MX
+   115.    procedure F2(MA,MB,MM,MX: in Matrix; MK: out Matrix) is
+   116.    begin
+   117.       MK := AddMatr(MultMatr(Transp(MA),Transp(MultMatr(MB,MM))),MX);
+   118.    end F2;
+   119.
+   120.    --F3:  O = SORT(P)*(MR*MS)
+   121.    procedure F3(P: in Vect; MR,MS: in Matrix; O: out Vect) is
+   122.    begin
+   123.       O:= MultVectMatr(SortVect(P),MultMatr(MR,MS));
+   124.    end F3;
+   125.
+   126.    --Reading vector from console
+   127.    procedure ReadVect(A : out Vect) is
+   128.    begin
+   129.       for i in 1..N loop
+   130.          Get(A(i));
+   131.       end loop;
+   132.    end ReadVect;
+   133.
+   134.    --Displaying vector in console
+   135.    procedure ShowVect(A : in Vect) is
+   136.    begin
+   137.       if N<=5 then
+   138.          for i in 1..N loop
+   139.             Put(A(i));
+   140.          end loop;
+   141.       end if;
+   142.    end ShowVect;
+   143.
+   144.    --Reading matrix from console
+   145.    procedure ReadMatr(MA: out Matrix) is
+   146.    begin
+   147.       for i in 1..N loop
+   148.       Put("New row");
+   149.       New_Line;
+   150.       for j in 1..N loop
+   151.       Get(MA(i,j));
+   152.       end loop;
+   153.       end loop;
+   154.    end ReadMatr;
+   155.
+   156.    --Displaying matrix in console
+   157.    procedure ShowMatr(MA: in Matrix) is
+   158.    begin
+   159.       if N<=5 then
+   160.          for i in 1..N loop
+   161.             New_Line;
+   162.             for j in 1..N loop
+   163.                Put(MA(i,j));
+   164.             end loop;
+   165.          end loop;
+   166.       end if;
+   167.    end ShowMatr;
+   168.
+   169.    --Input random vector
+   170.    procedure InputRandomVect(A : out Vect) is
+   171.       subtype Rand_Range is Integer range 1..100;
+   172.       package Random_Gen is new Ada.Numerics.Discrete_Random (Rand_Range);
+   173.       use Random_Gen;
+   174.       G : Generator;
+   175.    begin
+   176.       Reset(G);
+   177.       for i in 1..N loop
+   178.           A(i) := Random(G);
+   179.       end loop;
+   180.    end InputRandomVect;
+   181.
+   182.    --Input random matrix
+   183.    procedure InputRandomMatrix(MA : out Matrix) is
+   184.       subtype Rand_Range is Integer range 1..100;
+   185.       package Random_Gen is new Ada.Numerics.Discrete_Random (Rand_Range);
+   186.       use Random_Gen;
+   187.       G : Generator;
+   188.    begin
+   189.       Reset(G);
+   190.       for i in 1..N loop
+   191.       for j in 1..N loop
+   192.       MA(i,j):= Random(G);
+   193.       end loop;
+   194.       end loop;
+   195.    end InputRandomMatrix;
+   196.
+   197. end Data;
+
+Compiling: E:\\Lab1ADA\src\data.ads
+Source file time stamp: 2016-09-21 18:40:14
+Compiled at: 2016-09-21 22:19:25
+
+     1. -----Data package specification----------
+     2. generic
+     3.    N : in Integer;
+     4. package Data is
+     5.
+     6.    --Declaration of private types
+     7.    type Vect is private;
+     8.    type Matrix is private;
+     9.
+    10.    --F1: MC = MIN(A)*(MA*MD)
+    11.    procedure F1(A: in Vect; MA, MD: in Matrix; MC : out Matrix);
+    12.
+    13.    --F2: MK = TRANS(MA)*TRANS(MB*MM)+MX
+    14.    procedure F2(MA,MB,MM,MX: in Matrix; MK: out Matrix);
+    15.
+    16.    --F3:  O = SORT(P)*(MR*MS)
+    17.    procedure F3(P: in Vect; MR,MS: in Matrix; O: out Vect);
+    18.
+    19.    --The procedure for reading vector from console
+    20.    procedure ReadVect(A : out Vect);
+    21.
+    22.    --The procedure for displaying vector in console
+    23.    procedure ShowVect(A : in Vect);
+    24.
+    25.    --The procedure for reading matrix from console
+    26.    procedure ReadMatr(MA: out Matrix);
+    27.
+    28.    --The procedure for displaying matrix in console
+    29.    procedure ShowMatr(MA: in Matrix);
+    30.
+    31.    --Input random vector
+    32.    procedure InputRandomVect(A : out Vect);
+    33.
+    34.    --Input random matrix
+    35.    procedure InputRandomMatrix(MA : out Matrix);
+    36.
+    37.   --Definition of private types
+    38.   private
+    39.      type Vect is array(1..N) of Integer;
+    40.      type Matrix is array(1..N, 1..N) of Integer;
+    41.
+    42. end Data;
+    43.
+
+ 197 lines: No errors
