@@ -1,6 +1,5 @@
 package tasks;
 
-import lab2.Main;
 import lab2.Matrix;
 
 /**
@@ -9,20 +8,23 @@ import lab2.Matrix;
  * F2: MK = TRANS(MA)*TRANS(MB*MM)+MX
  */
 public class F2 extends Thread {
+	
+	private int n;
 
-    public F2(String name, int priority) {
+    public F2(String name, int priority, int n) {
         super(name);
         this.setPriority(priority);
+        this.n=n;
     }
 
     @Override
     public void run() {
         System.out.println("Thread " + this.getName() + " started!");
 
-        Matrix MA = new Matrix(Main.N, true);
-        Matrix MB = new Matrix(Main.N, true);
-        Matrix MM = new Matrix(Main.N, true);
-        Matrix MX = new Matrix(Main.N, true);
+        Matrix MA = new Matrix(n, true);
+        Matrix MB = new Matrix(n, true);
+        Matrix MM = new Matrix(n, true);
+        Matrix MX = new Matrix(n, true);
 
         System.out.println("F2 results: \n" + MK(MA, MB, MM, MX).toString());
         

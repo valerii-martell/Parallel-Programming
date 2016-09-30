@@ -19,15 +19,16 @@ public class Main {
 
     public static void main(String[] args) throws InterruptedException {
     	
-        Thread t1 = new F1("T1", Thread.MIN_PRIORITY);
-        Thread t2 = new F2("T2", Thread.MAX_PRIORITY);
-        Thread t3 = new Thread(new F3());
+        Thread t1 = new F1("T1", Thread.MIN_PRIORITY, N);
+        Thread t2 = new F2("T2", Thread.MAX_PRIORITY, N);
+        Thread t3 = new Thread(new F3(N));
         t3.setName("T3");
         t3.setPriority(Thread.NORM_PRIORITY);
 
         t1.start();
         t2.start();
         t3.start();
+        
 
         t1.join();
         t2.join();

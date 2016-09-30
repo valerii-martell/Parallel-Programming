@@ -1,6 +1,5 @@
 package tasks;
 
-import lab2.Main;
 import lab2.Matrix;
 import lab2.Vector;
 
@@ -10,18 +9,21 @@ import lab2.Vector;
  * F3:  O = SORT(P)*(MR*MS)
  */
 public class F3 implements Runnable {
+	
+	private int n;
 
-    public F3() {
+    public F3(int n) {
+    	this.n=n;
     }
 
     @Override
     public void run() {
         System.out.println("Thread T3 started!");
         
-        Vector P = new Vector(Main.N, true);
+        Vector P = new Vector(n, true);
 
-        Matrix MR = new Matrix(Main.N, true);
-        Matrix MS = new Matrix(Main.N, true);
+        Matrix MR = new Matrix(n, true);
+        Matrix MS = new Matrix(n, true);
 
         System.out.println("F3 results: \n" + O(P, MR, MS).toString());
         
