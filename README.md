@@ -1,2 +1,2 @@
 # Parallel-programming
-Practical works on course "Parallel programming" on Ada, Java, C #, Python and libraries WIN32, OpenMP, MPI.
+Programming assignments in university course "Parallel programming" on Ada, Java, C #, Python and C++ with use OpenMP, MPI.
