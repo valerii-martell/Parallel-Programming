@@ -1,0 +1,6 @@
+D:\projects\Lab3CSharp\Lab3CSharp\bin\Debug\Lab3CSharp.exe.config
+D:\projects\Lab3CSharp\Lab3CSharp\bin\Debug\Lab3CSharp.exe
+D:\projects\Lab3CSharp\Lab3CSharp\bin\Debug\Lab3CSharp.pdb
+D:\projects\Lab3CSharp\Lab3CSharp\obj\Debug\Lab3CSharp.csprojResolveAssemblyReference.cache
+D:\projects\Lab3CSharp\Lab3CSharp\obj\Debug\Lab3CSharp.exe
+D:\projects\Lab3CSharp\Lab3CSharp\obj\Debug\Lab3CSharp.pdb
