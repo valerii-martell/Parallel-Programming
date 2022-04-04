@@ -1,0 +1,126 @@
+GNAT GPL 2016 (20160515-49)
+Copyright 1992-2016, Free Software Foundation, Inc.
+
+Compiling: data.adb
+Source file time stamp: 2017-05-02 10:22:00
+Compiled at: 2017-05-03 03:58:31
+
+     1. with Ada.Text_IO, Ada.Integer_Text_IO, Ada.Numerics.Discrete_Random, Ada.Streams;
+     2. use Ada.Text_IO, Ada.Integer_Text_IO, Ada.Streams;
+     3.
+     4. ---------Data package body--------------
+     5. package body Data is
+     6.
+     7.    function Max(A: Vect; up, down : Integer) return Integer is
+     8.       Result : Integer;
+     9.    begin
+    10.       Result :=A(up);
+    11.       for i in up+1..down loop
+    12.          if A(i) > Result then
+    13.             Result := A(i);
+    14.             end if;
+    15.          end loop;
+    16.       return Result;
+    17.    end Max;
+    18.
+    19.    --Reading vector from console
+    20.    procedure ReadVect(A : out Vect) is
+    21.    begin
+    22.       for i in 1..N loop
+    23.          Get(A(i));
+    24.       end loop;
+    25.    end ReadVect;
+    26.
+    27.    --Displaying vector in console
+    28.    procedure ShowVect(A : in Vect) is
+    29.    begin
+    30.       if N<=20 then
+    31.          for i in 1..N loop
+    32.             Put(A(i));
+    33.          end loop;
+    34.       end if;
+    35.    end ShowVect;
+    36.
+    37.    --Reading matrix from console
+    38.    procedure ReadMatr(MA: out Matrix) is
+    39.    begin
+    40.       for i in 1..N loop
+    41.          Put("New row");
+    42.          New_Line;
+    43.          for j in 1..N loop
+    44.             Get(MA(i,j));
+    45.          end loop;
+    46.       end loop;
+    47.    end ReadMatr;
+    48.
+    49.    --Displaying matrix in console
+    50.    procedure ShowMatr(MA: in Matrix) is
+    51.    begin
+    52.       if N<=20 then
+    53.          for i in 1..N loop
+    54.             New_Line;
+    55.             for j in 1..N loop
+    56.                Put(MA(i,j));
+    57.             end loop;
+    58.          end loop;
+    59.       else
+    60.          Put("output is too big");
+    61.       end if;
+    62.    end ShowMatr;
+    63.
+    64.    --Input simple vector
+    65.    procedure InputSimpleVect(A : out Vect) is
+    66.    begin
+    67.       for i in 1..N loop
+    68.           A(i) := 1;
+    69.       end loop;
+    70.    end InputSimpleVect;
+    71.
+    72.    --Input simple matrix
+    73.    procedure InputSimpleMatrix(MA : out Matrix) is
+    74.    begin
+    75.       for i in 1..N loop
+    76.          for j in 1..N loop
+    77.             MA(i,j):= 1;
+    78.          end loop;
+    79.       end loop;
+    80.    end InputSimpleMatrix;
+    81.
+    82. end Data;
+
+Compiling: data.ads
+Source file time stamp: 2017-05-02 10:19:36
+Compiled at: 2017-05-03 03:58:31
+
+     1. -----Data package specification----------
+     2. generic
+     3.    N : in Integer;
+     4. package Data is
+     5.
+     6.    --Definition of private types
+     7.    type Vect is array(1..N) of Integer;
+     8.    type Matrix is array(1..N, 1..N) of Integer;
+     9.
+    10.    function Max(A: in Vect; up, down : in Integer) return Integer;
+    11.
+    12.    --The procedure for reading vector from console
+    13.    procedure ReadVect(A : out Vect);
+    14.
+    15.    --The procedure for displaying vector in console
+    16.    procedure ShowVect(A : in Vect);
+    17.
+    18.    --The procedure for reading matrix from console
+    19.    procedure ReadMatr(MA: out Matrix);
+    20.
+    21.    --The procedure for displaying matrix in console
+    22.    procedure ShowMatr(MA: in Matrix);
+    23.
+    24.    --The procedure for input simple vector
+    25.    procedure InputSimpleVect(A : out Vect);
+    26.
+    27.    --The procedure for input simple matrix
+    28.    procedure InputSimpleMatrix(MA : out Matrix);
+    29.
+    30. end Data;
+
+ 82 lines: No errors

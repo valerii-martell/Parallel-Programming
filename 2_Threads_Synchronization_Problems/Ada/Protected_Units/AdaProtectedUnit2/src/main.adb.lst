@@ -1,0 +1,304 @@
+GNAT GPL 2016 (20160515-49)
+Copyright 1992-2016, Free Software Foundation, Inc.
+
+Compiling: main.adb
+Source file time stamp: 2017-06-17 13:05:34
+Compiled at: 2017-06-18 20:27:06
+
+     1. ------------------------Main program------------------------------
+     2. --Programming for parallel computer systems
+     3. --Laboratory work #5. Ada. Protected Units
+     4. --Valeriy Demchik
+     5. --NTUU "KPI"
+     6. --FICT IO-41
+     7. --15.06.2017
+     8. --Task: MA = MB*MC + d*MO*MK
+     9. --
+    10. ---==========SM=========
+    11. ----|-----|-----|-----|
+    12. ----1-----2-----3-----4
+    13. ----|-----------|-----|
+    14. --MA,MB-------MC,MO--d,MK
+    15. ------------------------------------------------------------------
+    16.
+    17. with Ada.Text_IO, Ada.Integer_text_iO, Ada.Synchronous_Task_Control, Data;
+    18. use Ada.Text_IO, Ada.Integer_text_iO, Ada.Synchronous_Task_Control;
+    19.
+    20. procedure Main is
+    21.
+    22.    N: Integer :=8;
+    23.    P: Integer :=4;
+    24.    H: Integer:= N/P;
+    25.
+    26.    package MonitorsData is new Data(N);
+    27.    use MonitorsData;
+    28.    MA, MB, MC, MO, MK : Matrix;
+    29.    d : Integer;
+    30.    ------------------------------------------------------------------
+    31.
+    32.    ------------------------------------------------------------------
+    33.    protected Synchronization is
+    34.       entry WaitForInput;
+    35.       entry WaitForCalc;
+    36.       procedure InputSignal;
+    37.       procedure CalcSignal;
+    38.
+    39.    private
+    40.       inputFlag:Natural:=0;
+    41.       calcFlag:Natural:=0;
+    42.    end Synchronization;
+    43.
+    44.    protected SharedResourse is
+    45.       procedure SetMC(data : in Matrix);
+    46.       procedure SetMK(data : in Matrix);
+    47.       procedure Setd(data : in Integer);
+    48.
+    49.       function CopyMC return Matrix;
+    50.       function CopyMK return Matrix;
+    51.       function Copyd return Integer;
+    52.
+    53.    private
+    54.       d: Integer;
+    55.       MK:Matrix;
+    56.       MC:Matrix;
+    57.
+    58.    end SharedResourse;
+    59.    ------------------------------------------------------------------
+    60.
+    61.    ------------------------------------------------------------------
+    62.    protected body Synchronization is
+    63.
+    64.       procedure InputSignal is
+    65.       begin
+    66.          inputFlag := inputFlag + 1;
+    67.       end InputSignal;
+    68.
+    69.       procedure CalcSignal is
+    70.       begin
+    71.          calcFlag := calcFlag + 1;
+    72.       end CalcSignal;
+    73.
+    74.       entry WaitForInput
+    75.         when inputFlag = 3 is
+    76.       begin
+    77.          null;
+    78.       end WaitForInput;
+    79.
+    80.       entry WaitForCalc
+    81.         when calcFlag = 3 is
+    82.       begin
+    83.          null;
+    84.       end WaitForCalc;
+    85.
+    86.    end Synchronization;
+    87.
+    88.    protected body SharedResourse is
+    89.
+    90.       procedure Setd(data : in Integer) is
+    91.       begin
+    92.          d := data;
+    93.       end Setd;
+    94.
+    95.       procedure SetMK(data : in Matrix) is
+    96.       begin
+    97.          MK:=data;
+    98.       end SetMK;
+    99.
+   100.       procedure SetMC(data : in Matrix) is
+   101.       begin
+   102.          MC:=data;
+   103.       end SetMC;
+   104.
+   105.       function Copyd return Integer is
+   106.       begin
+   107.          return d;
+   108.       end Copyd;
+   109.
+   110.       function CopyMK return Matrix is
+   111.       begin
+   112.          return MK;
+   113.       end CopyMK;
+   114.
+   115.       function CopyMC return Matrix is
+   116.       begin
+   117.          return MC;
+   118.       end CopyMC;
+   119.
+   120.    end SharedResourse;
+   121.    ------------------------------------------------------------------
+   122.
+   123.    ------------------------------------------------------------------
+   124.    procedure StartTasks  is
+   125.       ------------------------------------------------------------------
+   126.
+   127.       ------------------------------------------------------------------
+   128.       task T1 is
+   129.       end T1;
+   130.
+   131.       task body T1 is
+   132.          MK1, MC1:Matrix;
+   133.          d1, buf1, buf2 :Integer;
+   134.       begin
+   135.
+   136.          Put_Line ("T1 started");
+   137.
+   138.          InputSimpleMatrix(MB);
+   139.
+   140.          Synchronization.InputSignal;
+   141.
+   142.          Synchronization.WaitForInput;
+   143.
+   144.          MC1 := SharedResourse.CopyMC;
+   145.          MK1 := SharedResourse.CopyMK;
+   146.          d1 := SharedResourse.Copyd;
+   147.
+   148.          for i in 1..H loop
+   149.             for j in 1..N loop
+   150.                buf1 :=0;
+   151.                buf2 :=0;
+   152.                for k in 1..N loop
+   153.                   buf1 := buf1 + MB(i,k) * MC1(k,j);
+   154.                   buf2 := buf2 + MO(i,k) * MK1(k,j);
+   155.                end loop;
+   156.                MA(i,j) := buf1 + d1*buf2;
+   157.             end loop;
+   158.          end loop;
+   159.
+   160.          Synchronization.WaitForCalc;
+   161.
+   162.          New_Line;
+   163.          Put_Line("MA = ");
+   164.          ShowMatr(MA);
+   165.          New_Line;
+   166.
+   167.          Put_Line ("T1 finished");
+   168.       end T1;
+   169.
+   170.       task T2 is
+   171.       end T2;
+   172.
+   173.       task body T2 is
+   174.          MK2, MC2:Matrix;
+   175.          d2, buf1, buf2 :Integer;
+   176.       begin
+   177.
+   178.          Put_Line ("T2 started");
+   179.
+   180.          Synchronization.WaitForInput;
+   181.
+   182.          MC2 := SharedResourse.CopyMC;
+   183.          MK2 := SharedResourse.CopyMK;
+   184.          d2 := SharedResourse.Copyd;
+   185.
+   186.          for i in H+1..2*H loop
+   187.             for j in 1..N loop
+   188.                buf1 :=0;
+   189.                buf2 :=0;
+   190.                for k in 1..N loop
+   191.                   buf1 := buf1 + MB(i,k) * MC2(k,j);
+   192.                   buf2 := buf2 + MO(i,k) * MK2(k,j);
+   193.                end loop;
+   194.                MA(i,j) := buf1 + d2*buf2;
+   195.             end loop;
+   196.          end loop;
+   197.
+   198.          Synchronization.CalcSignal;
+   199.
+   200.          Put_Line ("T2 finished");
+   201.
+   202.       end T2;
+   203.
+   204.       task T3 is
+   205.       end T3;
+   206.
+   207.       task body T3 is
+   208.          MK3, MC3:Matrix;
+   209.          d3, buf1, buf2 :Integer;
+   210.       begin
+   211.
+   212.          Put_Line ("T3 started");
+   213.
+   214.          InputSimpleMatrix(MC);
+   215.          InputSimpleMatrix(MO);
+   216.
+   217.          SharedResourse.SetMC(MC);
+   218.
+   219.          Synchronization.InputSignal;
+   220.
+   221.          Synchronization.WaitForInput;
+   222.
+   223.          MC3 := SharedResourse.CopyMC;
+   224.          MK3 := SharedResourse.CopyMK;
+   225.          d3 := SharedResourse.Copyd;
+   226.
+   227.          for i in 2*H+1..3*H loop
+   228.             for j in 1..N loop
+   229.                buf1 :=0;
+   230.                buf2 :=0;
+   231.                for k in 1..N loop
+   232.                   buf1 := buf1 + MB(i,k) * MC3(k,j);
+   233.                   buf2 := buf2 + MO(i,k) * MK3(k,j);
+   234.                end loop;
+   235.                MA(i,j) := buf1 + d3*buf2;
+   236.             end loop;
+   237.          end loop;
+   238.
+   239.          Synchronization.CalcSignal;
+   240.
+   241.          Put_Line ("T3 finished");
+   242.       end T3;
+   243.
+   244.       task T4 is
+   245.       end T4;
+   246.
+   247.       task body T4 is
+   248.          MK4, MC4:Matrix;
+   249.          d4, buf1, buf2 :Integer;
+   250.       begin
+   251.
+   252.          Put_Line ("T4 started");
+   253.
+   254.          InputSimpleMatrix(MK);
+   255.          d:=1;
+   256.
+   257.          SharedResourse.Setd(d);
+   258.          SharedResourse.SetMK(MK);
+   259.
+   260.          Synchronization.InputSignal;
+   261.
+   262.          Synchronization.WaitForInput;
+   263.
+   264.          MC4 := SharedResourse.CopyMC;
+   265.          MK4 := SharedResourse.CopyMK;
+   266.          d4 := SharedResourse.Copyd;
+   267.
+   268.          for i in 3*H+1..N loop
+   269.             for j in 1..N loop
+   270.                buf1 :=0;
+   271.                buf2 :=0;
+   272.                for k in 1..N loop
+   273.                   buf1 := buf1 + MB(i,k) * MC4(k,j);
+   274.                   buf2 := buf2 + MO(i,k) * MK4(k,j);
+   275.                end loop;
+   276.                MA(i,j) := buf1 + d4*buf2;
+   277.             end loop;
+   278.          end loop;
+   279.
+   280.          Synchronization.CalcSignal;
+   281.
+   282.          Put_Line ("T4 finished");
+   283.       end T4;
+   284.
+   285.    begin
+   286.       null;
+   287.    end StartTasks;
+   288.
+   289. begin
+   290.    Put_Line ("Main thread started");
+   291.    StartTasks;
+   292.    Put_Line ("Main thread finished");
+   293.
+   294. end Main;
+   295.
+
+ 295 lines: No errors

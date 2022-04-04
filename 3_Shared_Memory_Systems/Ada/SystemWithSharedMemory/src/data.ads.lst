@@ -1,0 +1,39 @@
+GNAT GPL 2016 (20160515-49)
+Copyright 1992-2016, Free Software Foundation, Inc.
+
+Compiling: data.ads
+Source file time stamp: 2017-05-02 10:19:36
+Compiled at: 2017-05-03 03:58:31
+
+     1. -----Data package specification----------
+     2. generic
+     3.    N : in Integer;
+     4. package Data is
+     5.
+     6.    --Definition of private types
+     7.    type Vect is array(1..N) of Integer;
+     8.    type Matrix is array(1..N, 1..N) of Integer;
+     9.
+    10.    function Max(A: in Vect; up, down : in Integer) return Integer;
+    11.
+    12.    --The procedure for reading vector from console
+    13.    procedure ReadVect(A : out Vect);
+    14.
+    15.    --The procedure for displaying vector in console
+    16.    procedure ShowVect(A : in Vect);
+    17.
+    18.    --The procedure for reading matrix from console
+    19.    procedure ReadMatr(MA: out Matrix);
+    20.
+    21.    --The procedure for displaying matrix in console
+    22.    procedure ShowMatr(MA: in Matrix);
+    23.
+    24.    --The procedure for input simple vector
+    25.    procedure InputSimpleVect(A : out Vect);
+    26.
+    27.    --The procedure for input simple matrix
+    28.    procedure InputSimpleMatrix(MA : out Matrix);
+    29.
+    30. end Data;
+
+ 30 lines: No errors

@@ -1,0 +1,400 @@
+GNAT GPL 2016 (20160515-49)
+Copyright 1992-2016, Free Software Foundation, Inc.
+
+Compiling: main.adb
+Source file time stamp: 2017-06-18 17:25:14
+Compiled at: 2017-06-18 20:26:21
+
+     1. with Ada.Text_IO, Ada.Integer_Text_IO;
+     2. use Ada.Text_IO, Ada.Integer_Text_IO;
+     3. ----------------Main program---------------
+     4. --Programming for parallel computer systems
+     5. --Laboratory work #7. Ada. Rendezvous
+     6. --Valeriy Demchik
+     7. --NTUU "KPI"
+     8. --FICT IO-41
+     9. --22.05.2017
+    10. --Task: A = d*B + C*(MO*MK)
+    11. --
+    12. ---1---2---3---4
+    13. ---|-------|
+    14. --A,B,MK---5
+    15. -----------|
+    16. -----------6
+    17. -----------|
+    18. ---------d,C,MO
+    19. -------------------------------------------
+    20. procedure Main is
+    21.    N: Integer := 12;
+    22.    P: Integer := 6;
+    23.    H: Integer := N / P;
+    24.
+    25.    type Vector is array(Integer range<>) of Integer;
+    26.    subtype Vector_H is Vector(1..H);
+    27.    subtype Vector_2H is Vector(1..2*H);
+    28.    subtype Vector_3H is Vector(1..3*H);
+    29.    subtype Vector_4H is Vector(1..4*H);
+    30.    subtype Vector_5H is Vector(1..5*H);
+    31.    subtype Vector_N is Vector(1..N);
+    32.
+    33.    type Matrix is array(Integer range<>) of Vector_N;
+    34.    subtype Matrix_H is Matrix(1..H);
+    35.    subtype Matrix_2H is Matrix(1..2*H);
+    36.    subtype Matrix_3H is Matrix(1..3*H);
+    37.    subtype Matrix_4H is Matrix(1..4*H);
+    38.    subtype Matrix_5H is Matrix(1..5*H);
+    39.    subtype Matrix_N is Matrix(1..N);
+    40.
+    41.    procedure VectorInput(V: out Vector_N) is
+    42.    begin
+    43.       for i in 1..N loop
+    44.          V(i) := 1;
+    45.       end loop;
+    46.    end VectorInput;
+    47.
+    48.    procedure VectorOutput(V: in Vector_N) is
+    49.    begin
+    50.       if N<=20 then
+    51.          for i in 1..N loop
+    52.             Put(V(i));
+    53.          end loop;
+    54.       end if;
+    55.    end VectorOutput;
+    56.
+    57.    procedure MatrixOutput(M: in Matrix_N) is
+    58.    begin
+    59.       if N<=20 then
+    60.          for i in 1..N loop
+    61.             New_Line;
+    62.             for j in 1..N loop
+    63.                Put(M(i)(j));
+    64.             end loop;
+    65.          end loop;
+    66.       end if;
+    67.    end MatrixOutput;
+    68.
+    69.    procedure MatrixInput(M: out Matrix_N) is
+    70.    begin
+    71.       for col in 1..N loop
+    72.          for row in 1..N loop
+    73.             M(col)(row) := 1;
+    74.          end loop;
+    75.       end loop;
+    76.    end MatrixInput;
+    77.
+    78.    task Task1 is
+    79.       entry SetCMOd(C: in Vector_N; MO: in Matrix_H; d : in Integer);
+    80.    end Task1;
+    81.
+    82.    task Task2 is
+    83.       entry SetBMK(B: in Vector_5H; MK : in Matrix_N);
+    84.       entry SetCMOd(C: in Vector_N; MO: in Matrix_2H; d : in Integer);
+    85.       entry GetA(A: out Vector_5H);
+    86.    end Task2;
+    87.
+    88.    task Task3 is
+    89.       entry SetBMK(B: in Vector_4H; MK : in Matrix_N);
+    90.       entry SetCMOd(C: in Vector_N; MO: in Matrix_4H; d : in Integer);
+    91.       entry GetA(A: out Vector_4H);
+    92.    end Task3;
+    93.
+    94.    task Task4 is
+    95.       entry SetBMKCMOd(B: in Vector_H; MK : in Matrix_N; C: in Vector_N; MO: in Matrix_H; d : in Integer);
+    96.       entry GetA(A: out Vector_H);
+    97.    end Task4;
+    98.
+    99.    task Task5 is
+   100.       entry SetCMOd(C: in Vector_N; MO: in Matrix_5H; d : in Integer);
+   101.       entry SetBMK(B: in Vector_2H; MK : in Matrix_N);
+   102.       entry GetA(A: out Vector_2H);
+   103.    end Task5;
+   104.
+   105.    task Task6 is
+   106.       entry SetBMK(B: in Vector_H; MK : in Matrix_N);
+   107.       entry GetA(A: out Vector_H);
+   108.    end Task6;
+   109.
+   110.    task body Task1 is
+   111.       MK, MOMK: Matrix_N;
+   112.       MO_H : Matrix_H;
+   113.       A, B, C1 : Vector_N;
+   114.       d1, cell:Integer;
+   115.    begin
+   116.       Put_Line("Task 1 started");
+   117.
+   118.       --input data
+   119.       MatrixInput(MK);
+   120.       VectorInput(B);
+   121.       --B(5):=2;
+   122.
+   123.       Task2.SetBMK(B(H+1..N), MK);
+   124.
+   125.       accept SetCMOd(C: in Vector_N; MO: in Matrix_H; d : in Integer) do
+   126.          C1:=C;
+   127.          MO_H:=MO;
+   128.          d1:=d;
+   129.       end SetCMOd;
+   130.
+   131.       --compute
+   132.       for i in 1..H loop
+   133.          for j in 1..N loop
+   134.             cell := 0;
+   135.             for k in 1..N loop
+   136.                cell := cell + MO_H(i)(k)*MK(k)(j);
+   137.             end loop;
+   138.             MOMK(i)(j) := cell;
+   139.          end loop;
+   140.          cell := 0;
+   141.          for l in 1..N loop
+   142.             cell := cell + C1(l)*MOMK(i)(l);
+   143.          end loop;
+   144.          A(i) := d1*B(i) + cell;
+   145.       end loop;
+   146.
+   147.       Task2.GetA(A(H+1..N));
+   148.
+   149.       --show results
+   150.       New_Line;
+   151.       Put("A = ");
+   152.       New_Line;
+   153.       VectorOutput(A);
+   154.       New_Line;
+   155.
+   156.       Put_Line("Task 1 finished");
+   157.    end Task1;
+   158.
+   159.    task body Task2 is
+   160.       MK2, MOMK: Matrix_N;
+   161.       MO_2H: Matrix_2H;
+   162.       C2 : Vector_N;
+   163.       A_5H, B_5H: Vector_5H;
+   164.       d2, cell:Integer;
+   165.    begin
+   166.       Put_Line("Task 2 started");
+   167.
+   168.       accept SetBMK(B: in Vector_5H; MK : in Matrix_N) do
+   169.          B_5H:=B;
+   170.          MK2:=MK;
+   171.       end SetBMK;
+   172.
+   173.       Task3.SetBMK(B_5H(H+1..5*H), MK2);
+   174.
+   175.       accept SetCMOd(C: in Vector_N; MO: in Matrix_2H; d : in Integer) do
+   176.          C2:=C;
+   177.          MO_2H:=MO;
+   178.          d2:=d;
+   179.       end SetCMOd;
+   180.
+   181.       Task1.SetCMOd(C2, MO_2H(1..H), d2);
+   182.
+   183.       --compute
+   184.       for i in 1..H loop
+   185.          for j in 1..N loop
+   186.             cell := 0;
+   187.             for k in 1..N loop
+   188.                cell := cell + MO_2H(i+H)(k)*MK2(k)(j);
+   189.             end loop;
+   190.             MOMK(i)(j) := cell;
+   191.          end loop;
+   192.          cell := 0;
+   193.          for l in 1..N loop
+   194.             cell := cell + C2(l)*MOMK(i)(l);
+   195.          end loop;
+   196.          A_5H(i) := d2*B_5H(i) + cell;
+   197.       end loop;
+   198.
+   199.       Task3.GetA(A_5H(H+1..5*H));
+   200.
+   201.       accept GetA(A: out Vector_5H) do
+   202.          A := A_5H;
+   203.       end GetA;
+   204.
+   205.       Put_Line("Task 2 finished");
+   206.    end Task2;
+   207.
+   208.    task body Task3 is
+   209.       MK3, MOMK: Matrix_N;
+   210.       MO_4H: Matrix_4H;
+   211.       C3 : Vector_N;
+   212.       A_4H, B_4H: Vector_4H;
+   213.       d3, cell:Integer;
+   214.    begin
+   215.       Put_Line("Task 3 started");
+   216.
+   217.       accept SetBMK(B: in Vector_4H; MK : in Matrix_N) do
+   218.          B_4H:=B;
+   219.          MK3:=MK;
+   220.       end SetBMK;
+   221.
+   222.       accept SetCMOd(C: in Vector_N; MO: in Matrix_4H; d : in Integer) do
+   223.          C3:=C;
+   224.          MO_4H:=MO;
+   225.          d3:=d;
+   226.       end SetCMOd;
+   227.
+   228.       Task2.SetCMOd(C3, MO_4H(1..2*H), d3);
+   229.       Task5.SetBMK(B_4H(2*H+1..4*H), MK3);
+   230.       Task4.SetBMKCMOd(B_4H(H+1..2*H), MK3, C3, MO_4H(3*H+1..4*H), d3);
+   231.
+   232.       --compute
+   233.       for i in 1..H loop
+   234.          for j in 1..N loop
+   235.             cell := 0;
+   236.             for k in 1..N loop
+   237.                cell := cell + MO_4H(i+2*H)(k)*MK3(k)(j);
+   238.             end loop;
+   239.             MOMK(i)(j) := cell;
+   240.          end loop;
+   241.          cell := 0;
+   242.          for l in 1..N loop
+   243.             cell := cell + C3(l)*MOMK(i)(l);
+   244.          end loop;
+   245.          A_4H(i) := d3*B_4H(i) + cell;
+   246.       end loop;
+   247.
+   248.       Task4.GetA(A_4H(H+1..2*H));
+   249.       Task5.GetA(A_4H(2*H+1..4*H));
+   250.
+   251.       accept GetA(A: out Vector_4H) do
+   252.          A := A_4H;
+   253.       end GetA;
+   254.
+   255.       Put_Line("Task 3 finished");
+   256.    end Task3;
+   257.
+   258.    task body Task4 is
+   259.       MK4, MOMK: Matrix_N;
+   260.       MO_H: Matrix_H;
+   261.       C4 : Vector_N;
+   262.       A_H, B_H: Vector_H;
+   263.       d4, cell:Integer;
+   264.    begin
+   265.       Put_Line("Task 4 started");
+   266.
+   267.       accept SetBMKCMOd(B: in Vector_H; MK : in Matrix_N; C: in Vector_N; MO: in Matrix_H; d : in Integer) do
+   268.          B_H:=B;
+   269.          MK4:=MK;
+   270.          C4:=C;
+   271.          MO_H:=MO;
+   272.          d4:=d;
+   273.       end SetBMKCMOd;
+   274.
+   275.       --compute
+   276.       for i in 1..H loop
+   277.          for j in 1..N loop
+   278.             cell := 0;
+   279.             for k in 1..N loop
+   280.                cell := cell + MO_H(i)(k)*MK4(k)(j);
+   281.             end loop;
+   282.             MOMK(i)(j) := cell;
+   283.          end loop;
+   284.          cell := 0;
+   285.          for l in 1..N loop
+   286.             cell := cell + C4(l)*MOMK(i)(l);
+   287.          end loop;
+   288.          A_H(i) := d4*B_H(i) + cell;
+   289.       end loop;
+   290.
+   291.       accept GetA(A: out Vector_H) do
+   292.          A := A_H;
+   293.       end GetA;
+   294.
+   295.       Put_Line("Task 4 finished");
+   296.    end Task4;
+   297.
+   298.    task body Task5 is
+   299.       MK5, MOMK: Matrix_N;
+   300.       MO_5H: Matrix_5H;
+   301.       C5 : Vector_N;
+   302.       A_2H, B_2H: Vector_2H;
+   303.       d5, cell:Integer;
+   304.    begin
+   305.       Put_Line("Task 5 started");
+   306.
+   307.       accept SetCMOd(C: in Vector_N; MO: in Matrix_5H; d : in Integer) do
+   308.          C5:=C;
+   309.          MO_5H:=MO;
+   310.          d5:=d;
+   311.       end SetCMOd;
+   312.
+   313.       Task3.SetCMOd(C5, MO_5H(1..4*H), d5);
+   314.
+   315.       accept SetBMK(B: in Vector_2H; MK : in Matrix_N) do
+   316.          B_2H:=B;
+   317.          MK5:=MK;
+   318.       end SetBMK;
+   319.
+   320.       Task6.SetBMK(B_2H(H+1..2*H), MK5);
+   321.
+   322.       --compute
+   323.       for i in 1..H loop
+   324.          for j in 1..N loop
+   325.             cell := 0;
+   326.             for k in 1..N loop
+   327.                cell := cell + MO_5H(i+4*H)(k)*MK5(k)(j);
+   328.             end loop;
+   329.             MOMK(i)(j) := cell;
+   330.          end loop;
+   331.          cell := 0;
+   332.          for l in 1..N loop
+   333.             cell := cell + C5(l)*MOMK(i)(l);
+   334.          end loop;
+   335.          A_2H(i) := d5*B_2H(i) + cell;
+   336.       end loop;
+   337.
+   338.       Task6.GetA(A_2H(H+1..2*H));
+   339.
+   340.       accept GetA(A: out Vector_2H) do
+   341.          A := A_2H;
+   342.       end GetA;
+   343.
+   344.       Put_Line("Task 5 finished");
+   345.    end Task5;
+   346.
+   347.    task body Task6 is
+   348.       MO, MK6, MOMK: Matrix_N;
+   349.       C : Vector_N;
+   350.       A_H, B_H: Vector_H;
+   351.       d, cell:Integer;
+   352.    begin
+   353.       Put_Line("Task 6 started");
+   354.
+   355.       MatrixInput(MO);
+   356.       VectorInput(C);
+   357.       d:=1;
+   358.
+   359.       Task5.SetCMOd(C, MO(1..5*H), d);
+   360.
+   361.       accept SetBMK(B: in Vector_H; MK : in Matrix_N) do
+   362.          B_H:=B;
+   363.          MK6:=MK;
+   364.       end SetBMK;
+   365.
+   366.       --compute
+   367.       for i in 1..H loop
+   368.          for j in 1..N loop
+   369.             cell := 0;
+   370.             for k in 1..N loop
+   371.                cell := cell + MO(i+5*H)(k)*MK6(k)(j);
+   372.             end loop;
+   373.             MOMK(i)(j) := cell;
+   374.          end loop;
+   375.          cell := 0;
+   376.          for l in 1..N loop
+   377.             cell := cell + C(l)*MOMK(i)(l);
+   378.          end loop;
+   379.          A_H(i) := d*B_H(i) + cell;
+   380.       end loop;
+   381.
+   382.       accept GetA(A: out Vector_H) do
+   383.          A := A_H;
+   384.       end GetA;
+   385.
+   386.       Put_Line("Task 6 finished");
+   387.    end Task6;
+   388.
+   389. begin
+   390.    null;
+   391. end Main;
+
+ 391 lines: No errors

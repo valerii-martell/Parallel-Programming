@@ -1,0 +1,403 @@
+GNAT GPL 2016 (20160515-49)
+Copyright 1992-2016, Free Software Foundation, Inc.
+
+Compiling: main.adb
+Source file time stamp: 2017-06-29 20:50:10
+Compiled at: 2017-06-29 23:50:59
+
+     1. ------------------------Main program------------------------------
+     2. --Programming for parallel computer systems
+     3. --Laboratory work #5. Ada. Protected Units
+     4. --Valeriy Demchik
+     5. --NTUU "KPI"
+     6. --FICT IO-41
+     7. --15.06.2017
+     8. --Task: A = max(Z)*E + d*T(MO*MK)
+     9. --
+    10. --=======CM======
+    11. ---|---|---|---|
+    12. ---1---2---3---4
+    13. ---|-------|---|
+    14. --dTMK----EMO--AZ
+    15. ------------------------------------------------------------------
+    16.
+    17. with Ada.Text_IO, Ada.Integer_text_iO, Ada.Synchronous_Task_Control, Data;
+    18. use Ada.Text_IO, Ada.Integer_text_iO, Ada.Synchronous_Task_Control;
+    19.
+    20. procedure Main is
+    21.
+    22.    N: Integer :=8;
+    23.    P: Integer :=4;
+    24.    H: Integer:= N/P;
+    25.
+    26.    package MonitorsData is new Data(N);
+    27.    use MonitorsData;
+    28.    A, Z, E, T : Vect;
+    29.    MO, MK : Matrix;
+    30.    d : Integer;
+    31.    ------------------------------------------------------------------
+    32.
+    33.    ------------------------------------------------------------------
+    34.    protected Synchronization is
+    35.       entry WaitForInput;
+    36.       entry WaitForMax;
+    37.       entry WaitForCalc;
+    38.       procedure InputSignal;
+    39.       procedure MaxSignal;
+    40.       procedure CalcSignal;
+    41.
+    42.    private
+    43.       inputFlag:Natural:=0;
+    44.       maxFlag:Natural:=0;
+    45.       calcFlag:Natural:=0;
+    46.       sort12Flag:Natural:=0;
+    47.       sort34Flag:Natural:=0;
+    48.       sortFlag:Natural:=0;
+    49.    end Synchronization;
+    50.
+    51.    protected SharedResourse is
+    52.       procedure SetMax(data : in Integer);
+    53.       procedure SetMK(data : in Matrix);
+    54.       procedure SetT(data : in Vect);
+    55.       procedure Setd(data : in Integer);
+    56.
+    57.       function CopyMax return Integer;
+    58.       function Copyd return Integer;
+    59.       function CopyT return Vect;
+    60.       function CopyMK return Matrix;
+    61.
+    62.    private
+    63.       d: Integer;
+    64.       max: Integer := Integer'First;
+    65.       MK:Matrix;
+    66.       T:Vect;
+    67.
+    68.    end SharedResourse;
+    69.    ------------------------------------------------------------------
+    70.
+    71.    ------------------------------------------------------------------
+    72.    protected body Synchronization is
+    73.
+    74.       procedure InputSignal is
+    75.       begin
+    76.          inputFlag := inputFlag + 1;
+    77.       end InputSignal;
+    78.
+    79.       procedure CalcSignal is
+    80.       begin
+    81.          calcFlag := calcFlag + 1;
+    82.       end CalcSignal;
+    83.
+    84.       procedure MaxSignal is
+    85.       begin
+    86.          maxFlag := maxFlag + 1;
+    87.       end MaxSignal;
+    88.
+    89.       entry WaitForInput
+    90.         when inputFlag = 3 is
+    91.       begin
+    92.          null;
+    93.       end WaitForInput;
+    94.
+    95.       entry WaitForCalc
+    96.         when calcFlag = 3 is
+    97.       begin
+    98.          null;
+    99.       end WaitForCalc;
+   100.
+   101.       entry WaitForMax
+   102.         when maxFlag = 4 is
+   103.       begin
+   104.          null;
+   105.       end WaitForMax;
+   106.
+   107.    end Synchronization;
+   108.
+   109.    protected body SharedResourse is
+   110.
+   111.       procedure SetMax(data : in Integer) is
+   112.       begin
+   113.          if data >= max then
+   114.             max := data;
+   115.          end if;
+   116.       end SetMax;
+   117.
+   118.       procedure Setd(data : in Integer) is
+   119.       begin
+   120.          d := data;
+   121.       end Setd;
+   122.
+   123.       procedure SetMK(data : in Matrix) is
+   124.       begin
+   125.          MK:=data;
+   126.       end SetMK;
+   127.
+   128.       procedure SetT(data : in Vect) is
+   129.       begin
+   130.          T:=data;
+   131.       end SetT;
+   132.
+   133.       function Copyd return Integer is
+   134.       begin
+   135.          return d;
+   136.       end Copyd;
+   137.
+   138.       function CopyMax return Integer is
+   139.       begin
+   140.          return max;
+   141.       end CopyMax;
+   142.
+   143.       function CopyMK return Matrix is
+   144.       begin
+   145.          return MK;
+   146.       end CopyMK;
+   147.
+   148.       function CopyT return Vect is
+   149.       begin
+   150.          return T;
+   151.       end CopyT;
+   152.
+   153.    end SharedResourse;
+   154.    ------------------------------------------------------------------
+   155.
+   156.    ------------------------------------------------------------------
+   157.    procedure StartTasks  is
+   158.       ------------------------------------------------------------------
+   159.
+   160.       ------------------------------------------------------------------
+   161.       task T1 is
+   162.       end T1;
+   163.
+   164.       task body T1 is
+   165.          MK1:Matrix;
+   166.          MOMK1:Matrix;
+   167.          T1:Vect;
+   168.          d1:Integer;
+   169.          a1:Integer;
+   170.          buf:Integer;
+   171.       begin
+   172.
+   173.          Put_Line ("T1 started");
+   174.
+   175.          InputSimpleMatrix(MK);
+   176.          InputSimpleVect(T);
+   177.          d:=1;
+   178.
+   179.          SharedResourse.SetT(T);
+   180.          SharedResourse.SetMK(MK);
+   181.          SharedResourse.Setd(d);
+   182.
+   183.          Synchronization.InputSignal;
+   184.
+   185.          Synchronization.WaitForInput;
+   186.
+   187.          a1 := Max(Z, 1, H);
+   188.
+   189.          SharedResourse.setMax(a1);
+   190.
+   191.          Synchronization.MaxSignal;
+   192.
+   193.          Synchronization.WaitForMax;
+   194.
+   195.          a1 := SharedResourse.CopyMax;
+   196.          MK1 := SharedResourse.CopyMK;
+   197.          d1 := SharedResourse.Copyd;
+   198.          T1 := SharedResourse.CopyT;
+   199.
+   200.          for i in 1..H loop
+   201.             for j in 1..N loop
+   202.                buf :=0;
+   203.                for k in 1..N loop
+   204.                   buf := buf + MO(i,k) * MK1(k,j);
+   205.                end loop;
+   206.                MOMK1(i,j) := buf;
+   207.             end loop;
+   208.             buf := 0;
+   209.             for l in 1..N loop
+   210.                buf := buf + T1(l)*MOMK1(i,l);
+   211.             end loop;
+   212.             A(i) := a1*E(i) + d1*buf;
+   213.          end loop;
+   214.
+   215.          Synchronization.CalcSignal;
+   216.
+   217.          Put_Line ("T1 finished");
+   218.       end T1;
+   219.
+   220.       task T2 is
+   221.       end T2;
+   222.
+   223.       task body T2 is
+   224.          MK2:Matrix;
+   225.          MOMK2:Matrix;
+   226.          T2:Vect;
+   227.          d2:Integer;
+   228.          a2:Integer;
+   229.          buf:Integer;
+   230.       begin
+   231.
+   232.          Put_Line ("T2 started");
+   233.
+   234.          Synchronization.WaitForInput;
+   235.
+   236.          a2 := Max(Z, H+1, 2*H);
+   237.
+   238.          SharedResourse.SetMax(a2);
+   239.
+   240.          Synchronization.MaxSignal;
+   241.
+   242.          Synchronization.WaitForMax;
+   243.
+   244.          a2 := SharedResourse.CopyMax;
+   245.          MK2 := SharedResourse.CopyMK;
+   246.          d2 := SharedResourse.Copyd;
+   247.          T2 := SharedResourse.CopyT;
+   248.
+   249.          for i in H+1..2*H loop
+   250.             for j in 1..N loop
+   251.                buf :=0;
+   252.                for k in 1..N loop
+   253.                   buf := buf + MO(i,k) * MK2(k,j);
+   254.                end loop;
+   255.                MOMK2(i,j) := buf;
+   256.             end loop;
+   257.             buf := 0;
+   258.             for l in 1..N loop
+   259.                buf := buf + T2(l)*MOMK2(i,l);
+   260.             end loop;
+   261.             A(i) := a2*E(i) + d2*buf;
+   262.          end loop;
+   263.
+   264.          Synchronization.CalcSignal;
+   265.
+   266.          Put_Line ("T2 finished");
+   267.
+   268.       end T2;
+   269.
+   270.       task T3 is
+   271.       end T3;
+   272.
+   273.       task body T3 is
+   274.          MK3:Matrix;
+   275.          MOMK3:Matrix;
+   276.          T3:Vect;
+   277.          d3:Integer;
+   278.          a3:Integer;
+   279.          buf:Integer;
+   280.       begin
+   281.
+   282.          Put_Line ("T3 started");
+   283.
+   284.          InputSimpleVect(E);
+   285.          --E(2):=10;
+   286.          InputSimpleMatrix(MO);
+   287.
+   288.          Synchronization.InputSignal;
+   289.
+   290.          Synchronization.WaitForInput;
+   291.
+   292.          a3 := Max(Z, 2*H+1, 3*H);
+   293.
+   294.          SharedResourse.SetMax(a3);
+   295.
+   296.          Synchronization.MaxSignal;
+   297.
+   298.          Synchronization.WaitForMax;
+   299.
+   300.          a3 := SharedResourse.CopyMax;
+   301.          MK3 := SharedResourse.CopyMK;
+   302.          d3 := SharedResourse.Copyd;
+   303.          T3 := SharedResourse.CopyT;
+   304.
+   305.          for i in 2*H+1..3*H loop
+   306.             for j in 1..N loop
+   307.                buf :=0;
+   308.                for k in 1..N loop
+   309.                   buf := buf + MO(i,k) * MK3(k,j);
+   310.                end loop;
+   311.                MOMK3(i,j) := buf;
+   312.             end loop;
+   313.             buf := 0;
+   314.             for l in 1..N loop
+   315.                buf := buf + T3(l)*MOMK3(i,l);
+   316.             end loop;
+   317.             A(i) := a3*E(i) + d3*buf;
+   318.          end loop;
+   319.
+   320.          Synchronization.CalcSignal;
+   321.
+   322.          Put_Line ("T3 finished");
+   323.       end T3;
+   324.
+   325.       task T4 is
+   326.       end T4;
+   327.
+   328.       task body T4 is
+   329.          MK4:Matrix;
+   330.          MOMK4:Matrix;
+   331.          T4:Vect;
+   332.          d4:Integer;
+   333.          a4:Integer;
+   334.          buf:Integer;
+   335.       begin
+   336.
+   337.          Put_Line ("T4 started");
+   338.
+   339.          InputSimpleVect(Z);
+   340.          --Z(3):=10;
+   341.
+   342.          Synchronization.InputSignal;
+   343.
+   344.          Synchronization.WaitForInput;
+   345.
+   346.          a4 := Max(Z, 3*H+1, 4*H);
+   347.
+   348.          SharedResourse.SetMax(a4);
+   349.
+   350.          Synchronization.MaxSignal;
+   351.
+   352.          Synchronization.WaitForMax;
+   353.
+   354.          a4 := SharedResourse.CopyMax;
+   355.          MK4 := SharedResourse.CopyMK;
+   356.          d4 := SharedResourse.Copyd;
+   357.          T4 := SharedResourse.CopyT;
+   358.
+   359.          for i in 3*H+1..4*H loop
+   360.             for j in 1..N loop
+   361.                buf :=0;
+   362.                for k in 1..N loop
+   363.                   buf := buf + MO(i,k) * MK4(k,j);
+   364.                end loop;
+   365.                MOMK4(i,j) := buf;
+   366.             end loop;
+   367.             buf := 0;
+   368.             for l in 1..N loop
+   369.                buf := buf + T4(l)*MOMK4(i,l);
+   370.             end loop;
+   371.             A(i) := a4*E(i) + d4*buf;
+   372.          end loop;
+   373.
+   374.          Synchronization.WaitForCalc;
+   375.
+   376.          New_Line;
+   377.          Put_Line("A = ");
+   378.          ShowVect(A);
+   379.          New_Line;
+   380.
+   381.          Put_Line ("T4 finished");
+   382.       end T4;
+   383.
+   384.    begin
+   385.       null;
+   386.    end StartTasks;
+   387.
+   388. begin
+   389.    Put_Line ("Main thread started");
+   390.    StartTasks;
+   391.    Put_Line ("Main thread finished");
+   392.
+   393. end Main;
+   394.
+
+ 394 lines: No errors

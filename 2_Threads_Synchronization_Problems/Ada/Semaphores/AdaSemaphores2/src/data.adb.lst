@@ -1,0 +1,151 @@
+GNAT GPL 2016 (20160515-49)
+Copyright 1992-2016, Free Software Foundation, Inc.
+
+Compiling: data.adb
+Source file time stamp: 2017-02-21 22:40:30
+Compiled at: 2017-06-05 23:10:39
+
+     1. with Ada.Text_IO, Ada.Integer_Text_IO, Ada.Numerics.Discrete_Random, Ada.Streams;
+     2. use Ada.Text_IO, Ada.Integer_Text_IO, Ada.Streams;
+     3.
+     4. ---------Data package body--------------
+     5. package body Data is
+     6.
+     7.    --Multiply two matrices in range
+     8.    function MultMatr(MA, MB : Matrix; up, down : Integer) return Matrix is
+     9.       Cell : Integer;
+    10.       Result : Matrix;
+    11.    begin
+    12.       for i in up..down loop
+    13.          for j in 1..N loop
+    14.             Cell := 0;
+    15.             for k in 1..N loop
+    16.                Cell := Cell + MA(i,k)*MB(k,j);
+    17.             end loop;
+    18.             Result(i,j):= Cell;
+    19.          end loop;
+    20.       end loop;
+    21.       return Result;
+    22.    end MultMatr;
+    23.
+    24.    --Adding two matrices in range
+    25.    procedure AddMatr(MR : out Matrix; MA, MB : Matrix; up, down : Integer) is
+    26.    begin
+    27.       for i in up..down loop
+    28.          for j in 1..N loop
+    29.             MR(i,j) := MA(i,j) + MB(i,j);
+    30.          end loop;
+    31.       end loop;
+    32.    end AddMatr;
+    33.
+    34.    --Multiply number and matrix in range
+    35.    function MultNumb(a: Integer; MA: Matrix; up, down : Integer) return Matrix is
+    36.       Result : Matrix;
+    37.    begin
+    38.       for i in up..down loop
+    39.          for j in 1..N loop
+    40.             Result(i,j):= a*MA(i,j);
+    41.          end loop;
+    42.       end loop;
+    43.       return Result;
+    44.    end MultNumb;
+    45.
+    46.    --Reading vector from console
+    47.    procedure ReadVect(A : out Vect) is
+    48.    begin
+    49.       for i in 1..N loop
+    50.          Get(A(i));
+    51.       end loop;
+    52.    end ReadVect;
+    53.
+    54.    --Displaying vector in console
+    55.    procedure ShowVect(A : in Vect) is
+    56.    begin
+    57.       if N<=10 then
+    58.          for i in 1..N loop
+    59.             Put(A(i));
+    60.          end loop;
+    61.       end if;
+    62.    end ShowVect;
+    63.
+    64.    --Reading matrix from console
+    65.    procedure ReadMatr(MA: out Matrix) is
+    66.    begin
+    67.       for i in 1..N loop
+    68.          Put("New row");
+    69.          New_Line;
+    70.          for j in 1..N loop
+    71.             Get(MA(i,j));
+    72.          end loop;
+    73.       end loop;
+    74.    end ReadMatr;
+    75.
+    76.    --Displaying matrix in console
+    77.    procedure ShowMatr(MA: in Matrix) is
+    78.    begin
+    79.       if N<=10 then
+    80.          for i in 1..N loop
+    81.             New_Line;
+    82.             for j in 1..N loop
+    83.                Put(MA(i,j));
+    84.             end loop;
+    85.          end loop;
+    86.       end if;
+    87.    end ShowMatr;
+    88.
+    89.    --Input simple vector
+    90.    procedure InputSimpleVect(A : out Vect) is
+    91.    begin
+    92.       for i in 1..N loop
+    93.           A(i) := 1;
+    94.       end loop;
+    95.    end InputSimpleVect;
+    96.
+    97.    --Input simple matrix
+    98.    procedure InputSimpleMatrix(MA : out Matrix) is
+    99.    begin
+   100.       for i in 1..N loop
+   101.          for j in 1..N loop
+   102.             MA(i,j):= 1;
+   103.          end loop;
+   104.       end loop;
+   105.    end InputSimpleMatrix;
+   106.
+   107. end Data;
+
+Compiling: data.ads
+Source file time stamp: 2017-06-05 20:02:32
+Compiled at: 2017-06-05 23:10:39
+
+     1. -----Data package specification----------
+     2. generic
+     3.    N : in Integer;
+     4. package Data is
+     5.
+     6.      --Definition of types
+     7.      type Vect is array(1..N) of Integer;
+     8.      type Matrix is array(1..N, 1..N) of Integer;
+     9.
+    10.    --The procedure for reading vector from console
+    11.    procedure ReadVect(A : out Vect);
+    12.
+    13.    --The procedure for displaying vector in console
+    14.    procedure ShowVect(A : in Vect);
+    15.
+    16.    --The procedure for reading matrix from console
+    17.    procedure ReadMatr(MA: out Matrix);
+    18.
+    19.    --The procedure for displaying matrix in console
+    20.    procedure ShowMatr(MA: in Matrix);
+    21.
+    22.    --The procedure for input simple vector
+    23.    procedure InputSimpleVect(A : out Vect);
+    24.
+    25.    --The procedure for input simple matrix
+    26.    procedure InputSimpleMatrix(MA : out Matrix);
+    27.
+    28.
+    29.
+    30. end Data;
+
+ 107 lines: No errors

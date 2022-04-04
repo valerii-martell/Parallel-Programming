@@ -1,0 +1,943 @@
+GNAT GPL 2016 (20160515-49)
+Copyright 1992-2016, Free Software Foundation, Inc.
+
+Compiling: main.adb
+Source file time stamp: 2017-05-21 08:58:40
+Compiled at: 2017-05-21 12:00:14
+
+     1. with Ada.Text_IO, Ada.Integer_Text_IO, Ada.Calendar;
+     2. use Ada.Text_IO, Ada.Integer_Text_IO, Ada.Calendar;
+     3. ------------------------Main program------------------------------
+     4. --Programming for parallel computer systems
+     5. --Course work part #2. System with local memory. Ada. Rendezvous
+     6. --Burach Ivan
+     7. --NTUU "KPI"
+     8. --FICT IO-41
+     9. --20.05.2017
+    10. --Task: A = (B+sort(Z))*MO+e*T(MX*MZ)
+    11. ------------------------------------------------------------------
+    12. procedure Main is
+    13.    N: Integer := 12;
+    14.    P: Integer := 6;
+    15.    H: Integer := N / P;
+    16.
+    17.    StartTime, FinishTime: Time;
+    18.    DiffTime: Duration;
+    19.
+    20.    type Vector is array(Integer range<>) of Integer;
+    21.    subtype Vector_H is Vector(1..H);
+    22.    subtype Vector_2H is Vector(1..2*H);
+    23.    subtype Vector_3H is Vector(1..3*H);
+    24.    subtype Vector_4H is Vector(1..4*H);
+    25.    subtype Vector_5H is Vector(1..5*H);
+    26.    subtype Vector_N is Vector(1..N);
+    27.
+    28.    type Matrix is array(Integer range<>) of Vector_N;
+    29.    subtype Matrix_H is Matrix(1..H);
+    30.    subtype Matrix_2H is Matrix(1..2*H);
+    31.    subtype Matrix_3H is Matrix(1..3*H);
+    32.    subtype Matrix_4H is Matrix(1..4*H);
+    33.    subtype Matrix_5H is Matrix(1..5*H);
+    34.    subtype Matrix_N is Matrix(1..N);
+    35.
+    36.    procedure VectorInput(V: out Vector_N) is
+    37.    begin
+    38.       for i in 1..N loop
+    39.          V(i) := 1;
+    40.       end loop;
+    41.    end VectorInput;
+    42.
+    43.    procedure VectorOutput(V: in Vector_N) is
+    44.    begin
+    45.       if N<=20 then
+    46.          for i in 1..N loop
+    47.             Put(V(i));
+    48.          end loop;
+    49.       end if;
+    50.    end VectorOutput;
+    51.
+    52.    procedure VectorOutput4H(V: in Vector_4H) is
+    53.    begin
+    54.       if N<=20 then
+    55.          for i in 1..4*H loop
+    56.             Put(V(i));
+    57.          end loop;
+    58.       end if;
+    59.    end VectorOutput4H;
+    60.
+    61.    procedure VectorOutput2H(V: in Vector_2H) is
+    62.    begin
+    63.       if N<=20 then
+    64.          for i in 1..2*H loop
+    65.             Put(V(i));
+    66.          end loop;
+    67.       end if;
+    68.    end VectorOutput2H;
+    69.
+    70.    procedure MatrixOutput(M: in Matrix_N) is
+    71.    begin
+    72.       if N<=20 then
+    73.          for i in 1..N loop
+    74.             New_Line;
+    75.             for j in 1..N loop
+    76.                Put(M(i)(j));
+    77.             end loop;
+    78.          end loop;
+    79.       else
+    80.          Put("Output is too big");
+    81.       end if;
+    82.    end MatrixOutput;
+    83.
+    84.    procedure MatrixInput(M: out Matrix_N) is
+    85.    begin
+    86.       for col in 1..N loop
+    87.          for row in 1..N loop
+    88.             M(col)(row) := 1;
+    89.          end loop;
+    90.       end loop;
+    91.    end MatrixInput;
+    92.
+    93.    task Task1 is
+    94.       entry SetZTMZ(Z :in Vector_N; T : in Vector_N; MZ : in Matrix_N);
+    95.       entry SetMOe(MO :in Matrix_4H; e : in Integer);
+    96.       entry GetS(S: out Vector_2H);
+    97.       entry SetS(S: in Vector_4H);
+    98.       entry GetR(R: out Vector_4H);
+    99.       entry SetR(R: in Vector_N);
+   100.    end Task1;
+   101.
+   102.    task Task2 is
+   103.       entry SetZTMZBMX(Z: in Vector_N; T : in Vector_N; MZ : in Matrix_N; B : in Vector_N; MX : in Matrix_N);
+   104.       entry SetMOe(MO: in Matrix_5H; e : in Integer);
+   105.       entry GetA(A : out Vector_N);
+   106.    end Task2;
+   107.
+   108.    task Task3 is
+   109.       entry SetMOe(MO: in Matrix_5H; e : in Integer);
+   110.       entry SetZTMZBMX(Z: in Vector_4H; T : in Vector_N; MZ : in Matrix_N; B : in Vector_4H; MX : in Matrix_4H);
+   111.       entry GetS(S: out Vector_2H);
+   112.       entry SetS(S: in Vector_4H);
+   113.       entry GetR(R: out Vector_4H);
+   114.       entry SetR(R: in Vector_N);
+   115.       entry GetA(A: out Vector_4H);
+   116.    end Task3;
+   117.
+   118.    task Task4 is
+   119.       entry SetBMXMOe(B: in Vector_H; MX : in Matrix_H; MO : in Matrix_H; e : in Integer);
+   120.       entry GetS(S: out Vector_H);
+   121.       entry SetS(S: in Vector_H);
+   122.       entry GetR(R: out Vector_H);
+   123.       entry SetR(R: in Vector_N);
+   124.       entry GetA(A : out Vector_H);
+   125.    end Task4;
+   126.
+   127.    task Task5 is
+   128.       entry SetData(Z: in Vector_H; T : in Vector_N; MZ : in Matrix_N; B : in Vector_H; MX : in Matrix_H; MO: in Matrix_H; e : in Integer);
+   129.       entry GetS(S: out Vector_H);
+   130.       entry SetS(S: in Vector_H);
+   131.       entry GetR(R: out Vector_H);
+   132.       entry SetR(R: in Vector_N);
+   133.       entry GetA(A : out Vector_H);
+   134.    end Task5;
+   135.
+   136.    task Task6 is
+   137.       entry SetZTMZBMX(Z: in Vector_H; T : in Vector_N; MZ : in Matrix_N; B : in Vector_H; MX : in Matrix_H);
+   138.       entry GetS(S: out Vector_H);
+   139.       entry SetS(S: in Vector_H);
+   140.       entry GetR(R: out Vector_H);
+   141.       entry SetR(R: in Vector_N);
+   142.       entry GetA(A : out Vector_H);
+   143.    end Task6;
+   144.
+   145.    task body Task1 is
+   146.       A:Vector_N;
+   147.       B: Vector_N;
+   148.       MX : Matrix_N;
+   149.       Z_6H: Vector_N;
+   150.       T1: Vector_N;
+   151.       MZ1:Matrix_N;
+   152.       MO_4H:Matrix_4H;
+   153.
+   154.       Z_2H: Vector_2H;
+   155.       Q_2H: Vector_2H;
+   156.
+   157.       S_4H:Vector_4H;
+   158.       R_4H:Vector_4H;
+   159.       R_6H:Vector_N;
+   160.
+   161.       MXMZ:Matrix_N;
+   162.       e1:Integer;
+   163.       buf, buf1, buf2, i1, i2, current :Integer;
+   164.    begin
+   165.       Put_Line("Task 1 started");
+   166.
+   167.       --input data
+   168.       VectorInput(B);
+   169.       MatrixInput(MX);
+   170.
+   171.       accept SetZTMZ(Z :in Vector_N; T : in Vector_N; MZ : in Matrix_N) do
+   172.          Z_6H:=Z;
+   173.          T1:=T;
+   174.          MZ1:=MZ;
+   175.       end SetZTMZ;
+   176.
+   177.       --send data to T2
+   178.       Task2.SetZTMZBMX(Z_6H(1..N), T1(1..N), MZ1(1..N), B(1..N), MX(1..N));
+   179.
+   180.       accept SetMOe(MO :in Matrix_4H; e : in Integer) do
+   181.          MO_4H:=MO;
+   182.          e1:=e;
+   183.       end SetMOe;
+   184.
+   185.       Task4.SetBMXMOe(B(3*H+1..4*H), MX(3*H+1..4*H), MO_4H(3*H+1..4*H), e1);
+   186.
+   187.       for i in H+1..2*H loop
+   188.          Z_2H(i):=Z_6H(i);
+   189.       end loop;
+   190.
+   191.       --Sort H
+   192.       for i in reverse H+1..2*H loop
+   193.          for j in 1..(i-1) loop
+   194.             if Z_2H(j) > Z_2H(j+1) then
+   195.                buf := Z_2H(j);
+   196.                Z_2H(j):=Z_2H(j+1);
+   197.                Z_2H(j+1):=buf;
+   198.             end if;
+   199.          end loop;
+   200.       end loop;
+   201.
+   202.       Task4.GetS(Z_2H(1..H));
+   203.
+   204.       --Merge sort
+   205.          i1 := 1;
+   206.          i2 := H+1;
+   207.          current := 1;
+   208.          while i1 <= H and i2 <= 2*H loop
+   209.             if Z_2H(i1) > Z_2H(i2) then
+   210.                Q_2H(current) := Z_2H(i2);
+   211.                i2 := i2+1;
+   212.                current := current+1;
+   213.             else
+   214.                Q_2H(current) := Z_2H(i1);
+   215.                i1 := i1+1;
+   216.                current := current+1;
+   217.             end if;
+   218.          end loop;
+   219.
+   220.          if i1 = H+1 then
+   221.             while i2 <= 2*H loop
+   222.                Q_2H(current) := Z_2H(i2);
+   223.                i2 := i2+1;
+   224.                current := current+1;
+   225.             end loop;
+   226.          else
+   227.             while i1 <= H loop
+   228.                Q_2H(current) := Z_2H(i1);
+   229.                i1 := i1+1;
+   230.                current := current+1;
+   231.             end loop;
+   232.       end if;
+   233.
+   234.       accept GetS(S: out Vector_2H) do
+   235.          S := Q_2H;
+   236.       end GetS;
+   237.
+   238.       accept SetS(S: in Vector_4H) do
+   239.          S_4H := S;
+   240.       end SetS;
+   241.
+   242.       Task4.SetS(S_4H(3*H+1..4*H));
+   243.
+   244.       for i in 1..H loop
+   245.          R_4H(i):=S_4H(i)+B(i);
+   246.       end loop;
+   247.
+   248.       Task4.GetR(R_4H(3*H+1..4*H));
+   249.
+   250.       accept GetR(R: out Vector_4H) do
+   251.          for i in 1..H loop
+   252.             R(i):=R_4H(i);
+   253.             R(i+3*H):=R_4H(i+3*H);
+   254.          end loop;
+   255.       end GetR;
+   256.
+   257.       accept SetR(R: in Vector_N) do
+   258.          R_6H := R;
+   259.       end SetR;
+   260.
+   261.       Task4.SetR(R_6H(1..N));
+   262.
+   263.       --Computing
+   264.       for i in 1..H loop
+   265.          for j in 1..N loop
+   266.             buf1 := 0;
+   267.             for k in 1..N loop
+   268.                buf1 := buf1 + MX(i)(k)*MZ1(k)(j);
+   269.             end loop;
+   270.               MXMZ(i)(j) := buf1;
+   271.          end loop;
+   272.          buf1 := 0;
+   273.          buf2 := 0;
+   274.          for l in 1..N loop
+   275.             buf1 := buf1 + T1(l)*MXMZ(i)(l);
+   276.             buf2 := buf2 + R_6H(l)*MO_4H(i)(l);
+   277.          end loop;
+   278.          A(i) := buf2 + e1*buf1;
+   279.       end loop;
+   280.
+   281.       Task4.GetA(A(3*H+1..4*H));
+   282.       Task2.GetA(A(1..N));
+   283.
+   284.       --show results
+   285.       New_Line;
+   286.       Put("A = ");
+   287.       New_Line;
+   288.       VectorOutput(A);
+   289.       New_Line;
+   290.
+   291.       Put_Line("Task 1 finished");
+   292.
+   293.       FinishTime := Clock;
+   294.       DiffTime := FinishTime - StartTime;
+   295.
+   296.       Put("Time : ");
+   297.       Put(Integer(DiffTime), 1);
+   298.       Put_Line("");
+   299.
+   300.    end Task1;
+   301.
+   302.    task body Task2 is
+   303.       B_6H: Vector_N;
+   304.       MX_6H : Matrix_N;
+   305.       Z_6H: Vector_N;
+   306.       T2: Vector_N;
+   307.       MZ2:Matrix_N;
+   308.       MO_5H:Matrix_5H;
+   309.
+   310.       S_2H:Vector_2H;
+   311.       Q_2H: Vector_2H;
+   312.
+   313.       S_4H:Vector_4H;
+   314.       Q_4H:Vector_4H;
+   315.       R_6H:Vector_N;
+   316.       S_6H:Vector_N;
+   317.       S:Vector_N;
+   318.       A_4H:Vector_4H;
+   319.
+   320.       MXMZ:Matrix_N;
+   321.       e2:Integer;
+   322.       buf, buf1, buf2, i1, i2, current :Integer;
+   323.    begin
+   324.       Put_Line("Task 2 started");
+   325.
+   326.       accept SetZTMZBMX(Z: in Vector_N; T : in Vector_N; MZ : in Matrix_N; B : in Vector_N; MX : in Matrix_N) do
+   327.          Z_6H:= Z;
+   328.          T2:=T;
+   329.          MZ2:=MZ;
+   330.          B_6H:=B;
+   331.          MX_6H:=MX;
+   332.       end SetZTMZBMX;
+   333.
+   334.       accept SetMOe(MO: in Matrix_5H; e : in Integer) do
+   335.          MO_5H:= MO;
+   336.          e2:=e;
+   337.       end SetMOe;
+   338.
+   339.       Task1.SetMOe(MO_5H(1..4*H), e2);
+   340.       Task3.SetZTMZBMX(Z_6H(2*H+1..N), T2(1..N), MZ2(1..N), B_6H(2*H+1..N), MX_6H(2*H+1..N));
+   341.       Task5.SetData(Z_6H(4*H+1..5*H), T2(1..N), MZ2(1..N), B_6H(4*H+1..5*H), MX_6H(4*H+1..5*H), MO_5H(3*H+1..4*H), e2);
+   342.
+   343.       for i in H+1..2*H loop
+   344.          S_2H(i):=Z_6H(i);
+   345.       end loop;
+   346.
+   347.       --Sort H
+   348.       for i in reverse 1..6*H loop
+   349.          for j in 1..(i-1) loop
+   350.             if Z_6H(j) > Z_6H(j+1) then
+   351.                buf := Z_6H(j);
+   352.                Z_6H(j):=Z_6H(j+1);
+   353.                Z_6H(j+1):=buf;
+   354.             end if;
+   355.          end loop;
+   356.       end loop;
+   357.
+   358.       Task5.GetS(S_2H(1..H));
+   359.
+   360.       --Merge sort
+   361.          i1 := 1;
+   362.          i2 := H+1;
+   363.          current := 1;
+   364.          while i1 <= H and i2 <= 2*H loop
+   365.             if S_2H(i1) > S_2H(i2) then
+   366.                Q_2H(current) := S_2H(i2);
+   367.                i2 := i2+1;
+   368.                current := current+1;
+   369.             else
+   370.                Q_2H(current) := S_2H(i1);
+   371.                i1 := i1+1;
+   372.                current := current+1;
+   373.             end if;
+   374.          end loop;
+   375.
+   376.          if i1 = H+1 then
+   377.             while i2 <= 2*H loop
+   378.                Q_2H(current) := S_2H(i2);
+   379.                i2 := i2+1;
+   380.                current := current+1;
+   381.             end loop;
+   382.          else
+   383.             while i1 <= H loop
+   384.                Q_2H(current) := S_2H(i1);
+   385.                i1 := i1+1;
+   386.                current := current+1;
+   387.             end loop;
+   388.       end if;
+   389.
+   390.       for i in 2*H+1..4*H loop
+   391.          S_4H(i):=Q_2H(i-2*H);
+   392.       end loop;
+   393.
+   394.       Task1.GetS(S_4H(1..2*H));
+   395.
+   396.       --Merge sort
+   397.          i1 := 1;
+   398.          i2 := 2*H+1;
+   399.          current := 1;
+   400.          while i1 <= 2*H and i2 <= 4*H loop
+   401.             if S_4H(i1) > S_4H(i2) then
+   402.                Q_4H(current) := S_4H(i2);
+   403.                i2 := i2+1;
+   404.                current := current+1;
+   405.             else
+   406.                Q_4H(current) := S_4H(i1);
+   407.                i1 := i1+1;
+   408.                current := current+1;
+   409.             end if;
+   410.          end loop;
+   411.
+   412.          if i1 = 2*H+1 then
+   413.             while i2 <= 4*H loop
+   414.                Q_4H(current) := S_4H(i2);
+   415.                i2 := i2+1;
+   416.                current := current+1;
+   417.             end loop;
+   418.          else
+   419.             while i1 <= 2*H loop
+   420.                Q_4H(current) := S_4H(i1);
+   421.                i1 := i1+1;
+   422.                current := current+1;
+   423.             end loop;
+   424.       end if;
+   425.
+   426.       for i in 2*H+1..6*H loop
+   427.          S_6H(i):=Q_4H(i-2*H);
+   428.       end loop;
+   429.
+   430.       Task3.GetS(S_6H(1..2*H));
+   431.
+   432.       --Merge sort
+   433.          i1 := 1;
+   434.          i2 := 4*H+1;
+   435.          current := 1;
+   436.          while i1 <= 4*H and i2 <= 6*H loop
+   437.             if S_6H(i1) > S_6H(i2) then
+   438.                S(current) := S_6H(i2);
+   439.                i2 := i2+1;
+   440.                current := current+1;
+   441.             else
+   442.                S(current) := S_6H(i1);
+   443.                i1 := i1+1;
+   444.                current := current+1;
+   445.             end if;
+   446.          end loop;
+   447.
+   448.          if i1 = 4*H+1 then
+   449.             while i2 <= 6*H loop
+   450.                S(current) := S_6H(i2);
+   451.                i2 := i2+1;
+   452.                current := current+1;
+   453.             end loop;
+   454.          else
+   455.             while i1 <= 4*H loop
+   456.                S(current) := S_6H(i1);
+   457.                i1 := i1+1;
+   458.                current := current+1;
+   459.             end loop;
+   460.       end if;
+   461.
+   462.       Task1.SetS(Z_6H(1..4*H));
+   463.       Task3.SetS(Z_6H(2*H+1..N));
+   464.       Task5.SetS(Z_6H(4*H+1..5*H));
+   465.
+   466.       for i in H+1..2*H loop
+   467.          R_6H(i):=Z_6H(i)+B_6H(i);
+   468.       end loop;
+   469.
+   470.       Task1.GetR(R_6H(1..4*H));
+   471.       Task3.GetR(R_6H(2*H+1..N));
+   472.       Task5.GetR(R_6H(4*H+1..5*H));
+   473.
+   474.
+   475.       Task1.SetR(R_6H(1..N));
+   476.       Task3.SetR(R_6H(1..N));
+   477.       Task5.SetR(R_6H(1..N));
+   478.       --Computing
+   479.       for i in 1..H loop
+   480.          for j in 1..N loop
+   481.             buf1 := 0;
+   482.             for k in 1..N loop
+   483.                buf1 := buf1 + MX_6H(i)(k)*MZ2(k)(j);
+   484.             end loop;
+   485.               MXMZ(i)(j) := buf1;
+   486.          end loop;
+   487.          buf1 := 0;
+   488.          buf2 := 0;
+   489.          for l in 1..N loop
+   490.             buf1 := buf1 + T2(l)*MXMZ(i)(l);
+   491.             buf2 := buf2 + R_6H(l)*MO_5H(i)(l);
+   492.          end loop;
+   493.          A_4H(i) := buf2 + e2*buf1;
+   494.       end loop;
+   495.
+   496.       Task5.GetA(A_4H(2*H+1..3*H));
+   497.       Task3.GetA(A_4H(1..4*H));
+   498.
+   499.       accept GetA(A : out Vector_N) do
+   500.          for i in 1..2*H loop
+   501.             A(i+H) := A_4H(i);
+   502.             A(i+4*H) := A_4H(i+2*H);
+   503.          end loop;
+   504.       end GetA;
+   505.
+   506.       Put_Line("Task 2 finished");
+   507.    end Task2;
+   508.
+   509.    task body Task3 is
+   510.       T3: Vector_N;
+   511.       MZ3:Matrix_N;
+   512.       MO_5H:Matrix_5H;
+   513.
+   514.       Z_2H: Vector_2H;
+   515.       Q_2H: Vector_2H;
+   516.       Z_4H: Vector_4H;
+   517.       R_4H: Vector_4H;
+   518.       B_4H: Vector_4H;
+   519.       MX_4H:Matrix_4H;
+   520.
+   521.       S_4H:Vector_4H;
+   522.       R_6H:Vector_N;
+   523.       A_4H: Vector_4H;
+   524.
+   525.       MXMZ:Matrix_N;
+   526.       e3:Integer;
+   527.       buf, buf1, buf2, i1, i2, current :Integer;
+   528.    begin
+   529.       Put_Line("Task 3 started");
+   530.
+   531.       accept SetMOe(MO: in Matrix_5H; e : in Integer) do
+   532.          MO_5H:= MO;
+   533.          e3:=e;
+   534.       end SetMOe;
+   535.
+   536.       Task2.SetMOe(MO_5H(1..5*H), e3);
+   537.
+   538.       accept SetZTMZBMX(Z: in Vector_4H; T : in Vector_N; MZ : in Matrix_N; B : in Vector_4H; MX : in Matrix_4H) do
+   539.          Z_4H:= Z;
+   540.          T3:=T;
+   541.          MZ3:=MZ;
+   542.          B_4H:=B;
+   543.          MX_4H:=MX;
+   544.       end SetZTMZBMX;
+   545.
+   546.       Task6.SetZTMZBMX(Z_4H(3*H+1..4*H), T3(1..N), MZ3(1..N), B_4H(3*H+1..4*H), MX_4H(3*H+1..4*H));
+   547.
+   548.       for i in 1..H loop
+   549.          Z_2H(i+H):=Z_4H(i);
+   550.       end loop;
+   551.
+   552.       --Sort H
+   553.       for i in reverse H+1..2*H loop
+   554.          for j in 1..(i-1) loop
+   555.             if Z_2H(j) > Z_2H(j+1) then
+   556.                buf := Z_2H(j);
+   557.                Z_2H(j):=Z_2H(j+1);
+   558.                Z_2H(j+1):=buf;
+   559.             end if;
+   560.          end loop;
+   561.       end loop;
+   562.
+   563.       Task6.GetS(Z_2H(1..H));
+   564.
+   565.       --Merge sort
+   566.          i1 := 1;
+   567.          i2 := H+1;
+   568.          current := 1;
+   569.          while i1 <= H and i2 <= 2*H loop
+   570.             if Z_2H(i1) > Z_2H(i2) then
+   571.                Q_2H(current) := Z_2H(i2);
+   572.                i2 := i2+1;
+   573.                current := current+1;
+   574.             else
+   575.                Q_2H(current) := Z_2H(i1);
+   576.                i1 := i1+1;
+   577.                current := current+1;
+   578.             end if;
+   579.          end loop;
+   580.
+   581.          if i1 = H+1 then
+   582.             while i2 <= 2*H loop
+   583.                Q_2H(current) := Z_2H(i2);
+   584.                i2 := i2+1;
+   585.                current := current+1;
+   586.             end loop;
+   587.          else
+   588.             while i1 <= H loop
+   589.                Q_2H(current) := Z_2H(i1);
+   590.                i1 := i1+1;
+   591.                current := current+1;
+   592.             end loop;
+   593.       end if;
+   594.
+   595.       accept GetS(S: out Vector_2H) do
+   596.          S := Q_2H;
+   597.       end GetS;
+   598.
+   599.       accept SetS(S: in Vector_4H) do
+   600.          S_4H := S;
+   601.       end SetS;
+   602.
+   603.       Task6.SetS(S_4H(3*H+1..4*H));
+   604.
+   605.       for i in 1..H loop
+   606.          R_4H(i):=S_4H(i)+B_4H(i);
+   607.       end loop;
+   608.
+   609.       Task6.GetR(R_4H(3*H+1..4*H));
+   610.
+   611.       accept GetR(R: out Vector_4H) do
+   612.          for i in 1..H loop
+   613.             R(i):=R_4H(i);
+   614.             R(i+3*H):=R_4H(i+3*H);
+   615.          end loop;
+   616.       end GetR;
+   617.
+   618.       accept SetR(R: in Vector_N) do
+   619.          R_6H := R;
+   620.       end SetR;
+   621.
+   622.       Task6.SetR(R_6H(1..N));
+   623.
+   624.       --Computing
+   625.       for i in 1..H loop
+   626.          for j in 1..N loop
+   627.             buf1 := 0;
+   628.             for k in 1..N loop
+   629.                buf1 := buf1 + MX_4H(i)(k)*MZ3(k)(j);
+   630.             end loop;
+   631.               MXMZ(i)(j) := buf1;
+   632.          end loop;
+   633.          buf1 := 0;
+   634.          buf2 := 0;
+   635.          for l in 1..N loop
+   636.             buf1 := buf1 + T3(l)*MXMZ(i)(l);
+   637.             buf2 := buf2 + R_6H(l)*MO_5H(i)(l);
+   638.          end loop;
+   639.          A_4H(i) := buf2 + e3*buf1;
+   640.       end loop;
+   641.
+   642.
+   643.
+   644.       Task6.GetA(A_4H(3*H+1..4*H));
+   645.
+   646.       accept GetA(A: out Vector_4H) do
+   647.          for i in 1..H loop
+   648.             A(i+H):=A_4H(i);
+   649.             A(i+3*H):=A_4H(i+3*H);
+   650.          end loop;
+   651.       end GetA;
+   652.
+   653.       Put_Line("Task 3 finished");
+   654.    end Task3;
+   655.
+   656.    task body Task4 is
+   657.       MZ:Matrix_N;
+   658.       MO_H:Matrix_H;
+   659.
+   660.       Z:Vector_N;
+   661.       T:Vector_N;
+   662.
+   663.       B_H: Vector_H;
+   664.       MX_H:Matrix_H;
+   665.
+   666.       A_H:Vector_H;
+   667.       Z_H:Vector_H;
+   668.       S_H:Vector_H;
+   669.       R_H:Vector_H;
+   670.       R_6H:Vector_N;
+   671.
+   672.       MXMZ:Matrix_N;
+   673.       e4:Integer;
+   674.       buf, buf1, buf2 :Integer;
+   675.    begin
+   676.       Put_Line("Task 4 started");
+   677.
+   678.       VectorInput(Z);
+   679.       Z(2):=10;
+   680.       VectorInput(T);
+   681.       MatrixInput(MZ);
+   682.
+   683.       Task1.SetZTMZ(Z(1..N), T(1..N), MZ(1..N));
+   684.
+   685.       accept SetBMXMOe(B: in Vector_H; MX : in Matrix_H; MO : in Matrix_H; e : in Integer) do
+   686.          B_H:= B;
+   687.          MX_H:=MX;
+   688.          MO_H:=MO;
+   689.          e4:=e;
+   690.       end SetBMXMOe;
+   691.
+   692.       for i in 1..H loop
+   693.          Z_H(i):=Z(i+3*H);
+   694.       end loop;
+   695.
+   696.       --Sort H
+   697.       for i in reverse 1..H loop
+   698.          for j in 1..(i-1) loop
+   699.             if Z_H(j) > Z_H(j+1) then
+   700.                buf := Z_H(j);
+   701.                Z_H(j):=Z_H(j+1);
+   702.                Z_H(j+1):=buf;
+   703.             end if;
+   704.          end loop;
+   705.       end loop;
+   706.
+   707.       accept GetS(S: out Vector_H) do
+   708.          S := Z_H;
+   709.       end GetS;
+   710.
+   711.       accept SetS(S: in Vector_H) do
+   712.          S_H := S;
+   713.       end SetS;
+   714.
+   715.       for i in 1..H loop
+   716.          R_H(i):=S_H(i)+B_H(i);
+   717.       end loop;
+   718.
+   719.       accept GetR(R: out Vector_H) do
+   720.          R := R_H;
+   721.       end GetR;
+   722.
+   723.       accept SetR(R: in Vector_N) do
+   724.          R_6H := R;
+   725.       end SetR;
+   726.
+   727.       --Computing
+   728.       for i in 1..H loop
+   729.          for j in 1..N loop
+   730.             buf1 := 0;
+   731.             for k in 1..N loop
+   732.                buf1 := buf1 + MX_H(i)(k)*MZ(k)(j);
+   733.             end loop;
+   734.               MXMZ(i)(j) := buf1;
+   735.          end loop;
+   736.          buf1 := 0;
+   737.          buf2 := 0;
+   738.          for l in 1..N loop
+   739.             buf1 := buf1 + T(l)*MXMZ(i)(l);
+   740.             buf2 := buf2 + R_6H(l)*MO_H(i)(l);
+   741.          end loop;
+   742.          A_H(i) := buf2 + e4*buf1;
+   743.       end loop;
+   744.
+   745.       accept GetA(A : out Vector_H) do
+   746.          A:=A_H(1..H);
+   747.       end GetA;
+   748.
+   749.       Put_Line("Task 4 finished");
+   750.
+   751.    end Task4;
+   752.
+   753.    task body Task5 is
+   754.       T5: Vector_N;
+   755.       MZ5:Matrix_N;
+   756.       MO_H:Matrix_H;
+   757.
+   758.
+   759.       B_H: Vector_H;
+   760.       MX_H:Matrix_H;
+   761.
+   762.       A_H:Vector_H;
+   763.       Z_H:Vector_H;
+   764.       S_H:Vector_H;
+   765.       R_H:Vector_H;
+   766.       R_6H:Vector_N;
+   767.
+   768.       MXMZ:Matrix_N;
+   769.       e5:Integer;
+   770.       buf, buf1, buf2 :Integer;
+   771.    begin
+   772.       Put_Line("Task 5 started");
+   773.
+   774.       accept SetData(Z: in Vector_H; T : in Vector_N; MZ : in Matrix_N; B : in Vector_H; MX : in Matrix_H; MO: in Matrix_H; e : in Integer) do
+   775.          Z_H:= Z;
+   776.          T5:=T;
+   777.          MZ5:=MZ;
+   778.          B_H:=B;
+   779.          MX_H:=MX;
+   780.          MO_H:=MO;
+   781.          e5:=e;
+   782.       end SetData;
+   783.
+   784.       --Sort H
+   785.       for i in reverse 1..H loop
+   786.          for j in 1..(i-1) loop
+   787.             if Z_H(j) > Z_H(j+1) then
+   788.                buf := Z_H(j);
+   789.                Z_H(j):=Z_H(j+1);
+   790.                Z_H(j+1):=buf;
+   791.             end if;
+   792.          end loop;
+   793.       end loop;
+   794.
+   795.       accept GetS(S: out Vector_H) do
+   796.          S := Z_H;
+   797.       end GetS;
+   798.
+   799.       accept SetS(S: in Vector_H) do
+   800.          S_H := S;
+   801.       end SetS;
+   802.
+   803.       for i in 1..H loop
+   804.          R_H(i):=S_H(i)+B_H(i);
+   805.       end loop;
+   806.
+   807.       accept GetR(R: out Vector_H) do
+   808.          R := R_H;
+   809.       end GetR;
+   810.
+   811.       accept SetR(R: in Vector_N) do
+   812.          R_6H := R;
+   813.       end SetR;
+   814.
+   815.       --Computing
+   816.       for i in 1..H loop
+   817.          for j in 1..N loop
+   818.             buf1 := 0;
+   819.             for k in 1..N loop
+   820.                buf1 := buf1 + MX_H(i)(k)*MZ5(k)(j);
+   821.             end loop;
+   822.             MXMZ(i)(j) := buf1;
+   823.          end loop;
+   824.          buf1 := 0;
+   825.          buf2 := 0;
+   826.          for l in 1..N loop
+   827.             buf1 := buf1 + T5(l)*MXMZ(i)(l);
+   828.             buf2 := buf2 + R_6H(l)*MO_H(i)(l);
+   829.          end loop;
+   830.          A_H(i) := buf2 + e5*buf1;
+   831.       end loop;
+   832.
+   833.       accept GetA(A : out Vector_H) do
+   834.          A:=A_H(1..H);
+   835.       end GetA;
+   836.
+   837.       Put_Line("Task 5 finished");
+   838.    end Task5;
+   839.
+   840.    task body Task6 is
+   841.       MZ6:Matrix_N;
+   842.       MO:Matrix_N;
+   843.       T6:Vector_N;
+   844.
+   845.       B_H: Vector_H;
+   846.       MX_H:Matrix_H;
+   847.
+   848.       A_H:Vector_H;
+   849.       Z_H:Vector_H;
+   850.       S_H:Vector_H;
+   851.       R_H:Vector_H;
+   852.       R_6H:Vector_N;
+   853.
+   854.       MXMZ:Matrix_N;
+   855.       e:Integer;
+   856.       buf, buf1, buf2 :Integer;
+   857.    begin
+   858.       Put_Line("Task 6 started");
+   859.
+   860.       MatrixInput(MO);
+   861.       e := 1;
+   862.
+   863.       Task3.SetMOe(MO(H+1..N), e);
+   864.
+   865.       accept SetZTMZBMX(Z: in Vector_H; T : in Vector_N; MZ : in Matrix_N; B : in Vector_H; MX : in Matrix_H) do
+   866.          Z_H:= Z;
+   867.          T6:=T;
+   868.          MZ6:=MZ;
+   869.          B_H:=B;
+   870.          MX_H:=MX;
+   871.       end SetZTMZBMX;
+   872.
+   873.       --Sort H
+   874.       for i in reverse 1..H loop
+   875.          for j in 1..(i-1) loop
+   876.             if Z_H(j) > Z_H(j+1) then
+   877.                buf := Z_H(j);
+   878.                Z_H(j):=Z_H(j+1);
+   879.                Z_H(j+1):=buf;
+   880.             end if;
+   881.          end loop;
+   882.       end loop;
+   883.
+   884.       accept GetS(S: out Vector_H) do
+   885.          S := Z_H;
+   886.       end GetS;
+   887.
+   888.       accept SetS(S: in Vector_H) do
+   889.          S_H := S;
+   890.       end SetS;
+   891.
+   892.       for i in 1..H loop
+   893.          R_H(i):=S_H(i)+B_H(i);
+   894.       end loop;
+   895.
+   896.       accept GetR(R: out Vector_H) do
+   897.          R := R_H;
+   898.       end GetR;
+   899.
+   900.       accept SetR(R: in Vector_N) do
+   901.          R_6H := R;
+   902.       end SetR;
+   903.
+   904.       --Computing
+   905.       for i in 1..H loop
+   906.          for j in 1..N loop
+   907.             buf1 := 0;
+   908.             for k in 1..N loop
+   909.                buf1 := buf1 + MX_H(i)(k)*MZ6(k)(j);
+   910.             end loop;
+   911.               MXMZ(i)(j) := buf1;
+   912.          end loop;
+   913.          buf1 := 0;
+   914.          buf2 := 0;
+   915.          for l in 1..N loop
+   916.             buf1 := buf1 + T6(l)*MXMZ(i)(l);
+   917.             buf2 := buf2 + R_6H(l)*MO(i+5*H)(l);
+   918.          end loop;
+   919.          A_H(i) := buf2 + e*buf1;
+   920.       end loop;
+   921.
+   922.
+   923.
+   924.       accept GetA(A : out Vector_H) do
+   925.          A:=A_H(1..H);
+   926.       end GetA;
+   927.
+   928.       Put_Line("Task 6 finished");
+   929.    end Task6;
+   930.
+   931. begin
+   932.    StartTime := Clock;
+   933. end Main;
+   934.
+
+ 934 lines: No errors

@@ -1,0 +1,855 @@
+GNAT GPL 2016 (20160515-49)
+Copyright 1992-2016, Free Software Foundation, Inc.
+
+Compiling: main.adb
+Source file time stamp: 2017-05-24 20:56:58
+Compiled at: 2017-05-25 00:01:54
+
+     1. with Ada.Text_IO, Ada.Integer_Text_IO;
+     2. use Ada.Text_IO, Ada.Integer_Text_IO;
+     3. ----------------Main program---------------
+     4. --Programming for parallel computer systems
+     5. --Laboratory work #7. Ada. Rendezvous
+     6. --Nazarivsky Dmytro
+     7. --NTUU "KPI"
+     8. --FICT IO-41
+     9. --24.05.2017
+    10. --Task: A = max(Z)*B + d*C*(MO*MK)
+    11. -------------------------------------------
+    12. procedure Main is
+    13.    N: Integer := 18;
+    14.    P: Integer := 9;
+    15.    H: Integer := N / P;
+    16.
+    17.    type Vector is array(Integer range<>) of Integer;
+    18.    subtype Vector_H is Vector(1..H);
+    19.    subtype Vector_2H is Vector(1..2*H);
+    20.    subtype Vector_3H is Vector(1..3*H);
+    21.    subtype Vector_4H is Vector(1..4*H);
+    22.    subtype Vector_5H is Vector(1..5*H);
+    23.    subtype Vector_6H is Vector(1..6*H);
+    24.    subtype Vector_7H is Vector(1..7*H);
+    25.    subtype Vector_8H is Vector(1..8*H);
+    26.    subtype Vector_N is Vector(1..N);
+    27.
+    28.    type Matrix is array(Integer range<>) of Vector_N;
+    29.    subtype Matrix_H is Matrix(1..H);
+    30.    subtype Matrix_2H is Matrix(1..2*H);
+    31.    subtype Matrix_3H is Matrix(1..3*H);
+    32.    subtype Matrix_4H is Matrix(1..4*H);
+    33.    subtype Matrix_5H is Matrix(1..5*H);
+    34.    subtype Matrix_6H is Matrix(1..6*H);
+    35.    subtype Matrix_7H is Matrix(1..7*H);
+    36.    subtype Matrix_8H is Matrix(1..8*H);
+    37.    subtype Matrix_N is Matrix(1..N);
+    38.
+    39.    procedure VectorInput(V: out Vector_N) is
+    40.    begin
+    41.       for i in 1..N loop
+    42.          V(i) := 1;
+    43.       end loop;
+    44.    end VectorInput;
+    45.
+    46.    procedure VectorOutput(V: in Vector_N) is
+    47.    begin
+    48.       if N<=20 then
+    49.          for i in 1..N loop
+    50.             Put(V(i));
+    51.          end loop;
+    52.       end if;
+    53.    end VectorOutput;
+    54.
+    55.    procedure MatrixOutput(M: in Matrix_N) is
+    56.    begin
+    57.       if N<=20 then
+    58.          for i in 1..N loop
+    59.             New_Line;
+    60.             for j in 1..N loop
+    61.                Put(M(i)(j));
+    62.             end loop;
+    63.          end loop;
+    64.       end if;
+    65.    end MatrixOutput;
+    66.
+    67.    procedure MatrixInput(M: out Matrix_N) is
+    68.    begin
+    69.       for col in 1..N loop
+    70.          for row in 1..N loop
+    71.             M(col)(row) := 1;
+    72.          end loop;
+    73.       end loop;
+    74.    end MatrixInput;
+    75.
+    76.    task Task1 is
+    77.       entry SetMOd(MO: in Matrix_3H; d : in Integer);
+    78.       entry SetBCZ(B: in Vector_H; C : in Vector_N; Z : in Vector_H);
+    79.       entry GetMax(a : out Integer);
+    80.       entry SetMax(a: in Integer);
+    81.       entry GetA(A: out Vector_H);
+    82.    end Task1;
+    83.
+    84.    task Task2 is
+    85.       entry SetMK(MK: in Matrix_N);
+    86.       entry SetMOd(MO: in Matrix_6H; d : in Integer);
+    87.       entry SetBCZ(B: in Vector_H; C : in Vector_N; Z : in Vector_H);
+    88.       entry GetMax(a : out Integer);
+    89.       entry SetMax(a: in Integer);
+    90.       entry GetA(A: out Vector_H);
+    91.    end Task2;
+    92.
+    93.    task Task3 is
+    94.       entry SetMK(MK: in Matrix_N);
+    95.       entry SetBCZ(B: in Vector_H; C : in Vector_N; Z : in Vector_H);
+    96.       entry GetMax(a : out Integer);
+    97.       entry SetMax(a : in Integer);
+    98.       entry GetA(A: out Vector_H);
+    99.    end Task3;
+   100.
+   101.    task Task4 is
+   102.       entry SetBCZ(B: in Vector_2H; C : in Vector_N; Z : in Vector_2H);
+   103.       entry SetMKMOd(MK: in Matrix_N; MO : in Matrix_2H; d : in Integer);
+   104.       entry GetMax(a : out Integer);
+   105.       entry SetMax(a: in Integer);
+   106.       entry GetA(A: out Vector_2H);
+   107.    end Task4;
+   108.
+   109.    task Task5 is
+   110.       entry SetBCZ(B: in Vector_2H; C : in Vector_N; Z : in Vector_2H);
+   111.       entry SetMKMOd(MK: in Matrix_N; MO : in Matrix_2H; d : in Integer);
+   112.       entry GetA(A: out Vector_2H);
+   113.    end Task5;
+   114.
+   115.    task Task6 is
+   116.       entry SetBCZ(B: in Vector_2H; C : in Vector_N; Z : in Vector_2H);
+   117.       entry SetMKMOd(MK: in Matrix_N; MO : in Matrix_2H; d : in Integer);
+   118.       entry GetMax(a : out Integer);
+   119.       entry SetMax(a: in Integer);
+   120.       entry GetA(A: out Vector_2H);
+   121.    end Task6;
+   122.
+   123.    task Task7 is
+   124.       entry SetCZ(C :in Vector_N; Z: in Vector_3H);
+   125.       entry SetMKMOd(MK: in Matrix_N; MO : in Matrix_H; d : in Integer);
+   126.       entry GetMax(a : out Integer);
+   127.       entry SetMax(a: in Integer);
+   128.    end Task7;
+   129.
+   130.    task Task8 is
+   131.       entry SetB(B :in Vector_6H);
+   132.       entry SetCZ(C :in Vector_N; Z: in Vector_6H);
+   133.       entry SetMKMOd(MK: in Matrix_N; MO : in Matrix_H; d : in Integer);
+   134.       entry GetMax(a : out Integer);
+   135.       entry SetMax(a: in Integer);
+   136.       entry GetA(A: out Vector_6H);
+   137.    end Task8;
+   138.
+   139.    task Task9 is
+   140.       entry SetB(B :in Vector_3H);
+   141.       entry SetMKMOd(MK: in Matrix_N; MO : in Matrix_H; d : in Integer);
+   142.       entry GetMax(a : out Integer);
+   143.       entry SetMax(a: in Integer);
+   144.       entry GetA(A: out Vector_3H);
+   145.    end Task9;
+   146.
+   147.
+   148.    task body Task1 is
+   149.       MK: Matrix_N;
+   150.       C1 : Vector_N;
+   151.       B_H:Vector_H;
+   152.       Z_H:Vector_H;
+   153.       MO_3H:Matrix_3H;
+   154.       d1:Integer;
+   155.       a1:Integer;
+   156.       cell:Integer;
+   157.       MOMK:Matrix_N;
+   158.       A_H:Vector_H;
+   159.    begin
+   160.       Put_Line("Task 1 started");
+   161.
+   162.       --input data
+   163.       MatrixInput(MK);
+   164.
+   165.       Task2.SetMK(MK(1..N));
+   166.
+   167.       accept SetMOd(MO: in Matrix_3H; d : in Integer) do
+   168.          MO_3H:=MO;
+   169.          d1:=d;
+   170.       end SetMOd;
+   171.
+   172.       Task4.SetMKMOd(MK(1..N), MO_3H(H+1..3*H), d1);
+   173.
+   174.       accept SetBCZ(B: in Vector_H; C : in Vector_N; Z : in Vector_H) do
+   175.          B_H:=B;
+   176.          C1:=C;
+   177.          Z_H:=Z;
+   178.       end SetBCZ;
+   179.
+   180.       --compute max
+   181.       a1 := Z_H(1);
+   182.       for i in 2..H loop
+   183.          if Z_H(i)>a1 then
+   184.             a1 := Z_H(i);
+   185.          end if;
+   186.       end loop;
+   187.
+   188.       accept GetMax(a : out Integer) do
+   189.          a:=a1;
+   190.       end GetMax;
+   191.
+   192.       accept SetMax(a: in Integer) do
+   193.          a1 := a;
+   194.       end SetMax;
+   195.
+   196.       --compute
+   197.       for i in 1..H loop
+   198.          for j in 1..N loop
+   199.             cell := 0;
+   200.             for k in 1..N loop
+   201.                cell := cell + MO_3H(i)(k)*MK(k)(j);
+   202.             end loop;
+   203.             MOMK(i)(j) := cell;
+   204.          end loop;
+   205.          cell := 0;
+   206.          for l in 1..N loop
+   207.             cell := cell + C1(l)*MOMK(i)(l);
+   208.          end loop;
+   209.          A_H(i) := d1*cell + a1*B_H(i);
+   210.       end loop;
+   211.
+   212.       accept GetA(A: out Vector_H) do
+   213.          A := A_H;
+   214.       end GetA;
+   215.
+   216.       Put_Line("Task 1 finished");
+   217.    end Task1;
+   218.
+   219.    task body Task2 is
+   220.       MK2: Matrix_N;
+   221.       C2 : Vector_N;
+   222.       B_H:Vector_H;
+   223.       Z_H:Vector_H;
+   224.       MO_6H:Matrix_6H;
+   225.       d2:Integer;
+   226.       a1,a2,a3:Integer;
+   227.       cell:Integer;
+   228.       MOMK:Matrix_N;
+   229.       A_H:Vector_H;
+   230.    begin
+   231.       Put_Line("Task 2 started");
+   232.
+   233.       accept SetMK(MK: in Matrix_N) do
+   234.          MK2:= MK;
+   235.       end SetMK;
+   236.
+   237.       accept SetMOd(MO: in Matrix_6H; d : in Integer) do
+   238.          MO_6H:= MO;
+   239.          d2:=d;
+   240.       end SetMOd;
+   241.
+   242.       Task3.SetMK(MK2(1..N));
+   243.       Task1.SetMOd(MO_6H(1..3*H), d2);
+   244.       Task5.SetMKMOd(MK2(1..N), MO_6H(4*H+1..6*H), d2);
+   245.
+   246.       accept SetBCZ(B: in Vector_H; C : in Vector_N; Z : in Vector_H) do
+   247.          B_H:=B;
+   248.          C2:=C;
+   249.          Z_H:=Z;
+   250.       end SetBCZ;
+   251.
+   252.       --compute max
+   253.       a2 := Z_H(1);
+   254.       for i in 2..H loop
+   255.          if Z_H(i)>a2 then
+   256.             a2 := Z_H(i);
+   257.          end if;
+   258.       end loop;
+   259.
+   260.       Task1.GetMax(a1);
+   261.       if a1>a2 then
+   262.          a2:=a1;
+   263.       end if;
+   264.
+   265.       Task3.GetMax(a3);
+   266.       if a3>a2 then
+   267.          a2:=a3;
+   268.       end if;
+   269.
+   270.       accept GetMax(a : out Integer) do
+   271.          a:=a2;
+   272.       end GetMax;
+   273.
+   274.       accept SetMax(a : in Integer) do
+   275.          a2:=a;
+   276.       end SetMax;
+   277.
+   278.       Task1.SetMax(a2);
+   279.       Task3.SetMax(a2);
+   280.
+   281.       --compute
+   282.       for i in 1..H loop
+   283.          for j in 1..N loop
+   284.             cell := 0;
+   285.             for k in 1..N loop
+   286.                cell := cell + MO_6H(i+3*H)(k)*MK2(k)(j);
+   287.             end loop;
+   288.             MOMK(i)(j) := cell;
+   289.          end loop;
+   290.          cell := 0;
+   291.          for l in 1..N loop
+   292.             cell := cell + C2(l)*MOMK(i)(l);
+   293.          end loop;
+   294.          A_H(i) := d2*cell + a2*B_H(i);
+   295.       end loop;
+   296.
+   297.       accept GetA(A: out Vector_H) do
+   298.          A := A_H;
+   299.       end GetA;
+   300.
+   301.       Put_Line("Task 2 finished");
+   302.
+   303.    end Task2;
+   304.
+   305.    task body Task3 is
+   306.       MK3: Matrix_N;
+   307.       C3 : Vector_N;
+   308.       B_H:Vector_H;
+   309.       Z_H:Vector_H;
+   310.       MO:Matrix_N;
+   311.       d:Integer;
+   312.       a3:Integer;
+   313.       cell:Integer;
+   314.       MOMK:Matrix_N;
+   315.       A_H:Vector_H;
+   316.    begin
+   317.       Put_Line("Task 3 started");
+   318.
+   319.       --input data
+   320.       MatrixInput(MO);
+   321.       d:=1;
+   322.
+   323.       Task2.SetMOd(MO(1..6*H), d);
+   324.
+   325.       accept SetMK(MK: in Matrix_N) do
+   326.          MK3:=MK;
+   327.       end SetMK;
+   328.
+   329.       Task6.SetMKMOd(MK3(1..N), MO(7*H+1..N), d);
+   330.
+   331.       accept SetBCZ(B: in Vector_H; C : in Vector_N; Z : in Vector_H) do
+   332.          B_H:=B;
+   333.          C3:=C;
+   334.          Z_H:=Z;
+   335.       end SetBCZ;
+   336.
+   337.       --compute max
+   338.       a3 := Z_H(1);
+   339.       for i in 2..H loop
+   340.          if Z_H(i)>a3 then
+   341.             a3 := Z_H(i);
+   342.          end if;
+   343.       end loop;
+   344.
+   345.       accept GetMax(a : out Integer) do
+   346.          a:=a3;
+   347.       end GetMax;
+   348.
+   349.       accept SetMax(a: in Integer) do
+   350.          a3 := a;
+   351.       end SetMax;
+   352.
+   353.       --compute
+   354.       for i in 1..H loop
+   355.          for j in 1..N loop
+   356.             cell := 0;
+   357.             for k in 1..N loop
+   358.                cell := cell + MO(i+6*H)(k)*MK3(k)(j);
+   359.             end loop;
+   360.             MOMK(i)(j) := cell;
+   361.          end loop;
+   362.          cell := 0;
+   363.          for l in 1..N loop
+   364.             cell := cell + C3(l)*MOMK(i)(l);
+   365.          end loop;
+   366.          A_H(i) := d*cell + a3*B_H(i);
+   367.       end loop;
+   368.
+   369.       accept GetA(A: out Vector_H) do
+   370.          A := A_H;
+   371.       end GetA;
+   372.
+   373.       Put_Line("Task 3 finished");
+   374.    end Task3;
+   375.
+   376.    task body Task4 is
+   377.       MK4: Matrix_N;
+   378.       C4 : Vector_N;
+   379.       B_2H:Vector_2H;
+   380.       Z_2H:Vector_2H;
+   381.       MO_2H:Matrix_2H;
+   382.       d4:Integer;
+   383.       a4:Integer;
+   384.       cell:Integer;
+   385.       MOMK:Matrix_N;
+   386.       A_2H:Vector_2H;
+   387.    begin
+   388.       Put_Line("Task 4 started");
+   389.
+   390.       accept SetBCZ(B: in Vector_2H; C : in Vector_N; Z : in Vector_2H) do
+   391.          B_2H:=B;
+   392.          C4:=C;
+   393.          Z_2H:=Z;
+   394.       end SetBCZ;
+   395.
+   396.       accept SetMKMOd(MK: in Matrix_N; MO : in Matrix_2H; d : in Integer) do
+   397.          MK4:=MK;
+   398.          MO_2H:=MO;
+   399.          d4:=d;
+   400.       end SetMKMOd;
+   401.
+   402.       Task1.SetBCZ(B_2H(1..H), C4(1..N), Z_2H(1..H));
+   403.       Task7.SetMKMOd(MK4(1..N), MO_2H(H+1..2*H), d4);
+   404.
+   405.       --compute max
+   406.       a4 := Z_2H(H+1);
+   407.       for i in H+2..2*H loop
+   408.          if Z_2H(i)>a4 then
+   409.             a4 := Z_2H(i);
+   410.          end if;
+   411.       end loop;
+   412.
+   413.       accept GetMax(a : out Integer) do
+   414.          a:=a4;
+   415.       end GetMax;
+   416.
+   417.       accept SetMax(a: in Integer) do
+   418.          a4 := a;
+   419.       end SetMax;
+   420.
+   421.       --compute
+   422.       for i in 1..H loop
+   423.          for j in 1..N loop
+   424.             cell := 0;
+   425.             for k in 1..N loop
+   426.                cell := cell + MO_2H(i)(k)*MK4(k)(j);
+   427.             end loop;
+   428.             MOMK(i)(j) := cell;
+   429.          end loop;
+   430.          cell := 0;
+   431.          for l in 1..N loop
+   432.             cell := cell + C4(l)*MOMK(i)(l);
+   433.          end loop;
+   434.          A_2H(i+H) := d4*cell + a4*B_2H(i+H);
+   435.       end loop;
+   436.
+   437.       Task1.GetA(A_2H(1..H));
+   438.
+   439.       accept GetA(A: out Vector_2H) do
+   440.          A := A_2H;
+   441.       end GetA;
+   442.
+   443.       Put_Line("Task 4 finished");
+   444.
+   445.    end Task4;
+   446.
+   447.    task body Task5 is
+   448.       MK5: Matrix_N;
+   449.       C5 : Vector_N;
+   450.       B_2H:Vector_2H;
+   451.       Z_2H:Vector_2H;
+   452.       MO_2H:Matrix_2H;
+   453.       d5:Integer;
+   454.       a4,a5,a6,a2,a8:Integer;
+   455.       cell:Integer;
+   456.       MOMK:Matrix_N;
+   457.       A_2H:Vector_2H;
+   458.    begin
+   459.       Put_Line("Task 5 started");
+   460.
+   461.       accept SetBCZ(B: in Vector_2H; C : in Vector_N; Z : in Vector_2H) do
+   462.          B_2H:=B;
+   463.          C5:=C;
+   464.          Z_2H:=Z;
+   465.       end SetBCZ;
+   466.
+   467.       accept SetMKMOd(MK: in Matrix_N; MO : in Matrix_2H; d : in Integer) do
+   468.          MK5:=MK;
+   469.          MO_2H:=MO;
+   470.          d5:=d;
+   471.       end SetMKMOd;
+   472.
+   473.       Task2.SetBCZ(B_2H(1..H), C5(1..N), Z_2H(1..H));
+   474.       Task8.SetMKMOd(MK5(1..N), MO_2H(H+1..2*H), d5);
+   475.
+   476.       --compute max
+   477.       a5 := Z_2H(H+1);
+   478.       for i in H+2..2*H loop
+   479.          if Z_2H(i)>a5 then
+   480.             a5 := Z_2H(i);
+   481.          end if;
+   482.       end loop;
+   483.
+   484.       Task4.GetMax(a4);
+   485.       if a4>a5 then
+   486.          a5:=a4;
+   487.       end if;
+   488.
+   489.       Task6.GetMax(a6);
+   490.       if a6>a5 then
+   491.          a5:=a6;
+   492.       end if;
+   493.
+   494.       Task2.GetMax(a2);
+   495.       if a2>a5 then
+   496.          a5:=a2;
+   497.       end if;
+   498.
+   499.       Task8.GetMax(a8);
+   500.       if a8>a5 then
+   501.          a5:=a8;
+   502.       end if;
+   503.
+   504.       Task2.SetMax(a5);
+   505.       Task8.SetMax(a5);
+   506.       Task4.SetMax(a5);
+   507.       Task6.SetMax(a5);
+   508. Put(a5);
+   509.       --compute
+   510.       for i in 1..H loop
+   511.          for j in 1..N loop
+   512.             cell := 0;
+   513.             for k in 1..N loop
+   514.                cell := cell + MO_2H(i)(k)*MK5(k)(j);
+   515.             end loop;
+   516.             MOMK(i)(j) := cell;
+   517.          end loop;
+   518.          cell := 0;
+   519.          for l in 1..N loop
+   520.             cell := cell + C5(l)*MOMK(i)(l);
+   521.          end loop;
+   522.          A_2H(i+H) := d5*cell + a5*B_2H(i+H);
+   523.       end loop;
+   524.
+   525.       Task2.GetA(A_2H(1..H));
+   526.
+   527.       accept GetA(A: out Vector_2H) do
+   528.          A := A_2H;
+   529.       end GetA;
+   530.
+   531.    end Task5;
+   532.
+   533.    task body Task6 is
+   534.       MK6: Matrix_N;
+   535.       C6 : Vector_N;
+   536.       B_2H:Vector_2H;
+   537.       Z_2H:Vector_2H;
+   538.       MO_2H:Matrix_2H;
+   539.       d6:Integer;
+   540.       a6:Integer;
+   541.       cell:Integer;
+   542.       MOMK:Matrix_N;
+   543.       A_2H:Vector_2H;
+   544.    begin
+   545.       Put_Line("Task 6 started");
+   546.
+   547.       accept SetBCZ(B: in Vector_2H; C : in Vector_N; Z : in Vector_2H) do
+   548.          B_2H:=B;
+   549.          C6:=C;
+   550.          Z_2H:=Z;
+   551.       end SetBCZ;
+   552.
+   553.       accept SetMKMOd(MK: in Matrix_N; MO : in Matrix_2H; d : in Integer) do
+   554.          MK6:=MK;
+   555.          MO_2H:=MO;
+   556.          d6:=d;
+   557.       end SetMKMOd;
+   558.
+   559.       Task3.SetBCZ(B_2H(1..H), C6(1..N), Z_2H(1..H));
+   560.       Task9.SetMKMOd(MK6(1..N), MO_2H(H+1..2*H), d6);
+   561.
+   562.       --compute max
+   563.       a6 := Z_2H(H+1);
+   564.       for i in H+2..2*H loop
+   565.          if Z_2H(i)>a6 then
+   566.             a6 := Z_2H(i);
+   567.          end if;
+   568.       end loop;
+   569.
+   570.       accept GetMax(a : out Integer) do
+   571.          a:=a6;
+   572.       end GetMax;
+   573.
+   574.       accept SetMax(a: in Integer) do
+   575.          a6 := a;
+   576.       end SetMax;
+   577.
+   578.       --compute
+   579.       for i in 1..H loop
+   580.          for j in 1..N loop
+   581.             cell := 0;
+   582.             for k in 1..N loop
+   583.                cell := cell + MO_2H(i)(k)*MK6(k)(j);
+   584.             end loop;
+   585.             MOMK(i)(j) := cell;
+   586.          end loop;
+   587.          cell := 0;
+   588.          for l in 1..N loop
+   589.             cell := cell + C6(l)*MOMK(i)(l);
+   590.          end loop;
+   591.          A_2H(i+H) := d6*cell + a6*B_2H(i+H);
+   592.       end loop;
+   593.
+   594.       Task3.GetA(A_2H(1..H));
+   595.
+   596.       accept GetA(A: out Vector_2H) do
+   597.          A := A_2H;
+   598.       end GetA;
+   599.
+   600.       Put_Line("Task 6 finished");
+   601.
+   602.    end Task6;
+   603.
+   604.    task body Task7 is
+   605.       MK7: Matrix_N;
+   606.       C7 : Vector_N;
+   607.       B:Vector_N;
+   608.       Z_3H:Vector_3H;
+   609.       MO_H:Matrix_H;
+   610.       d7:Integer;
+   611.       a7:Integer;
+   612.       cell:Integer;
+   613.       MOMK:Matrix_N;
+   614.       A:Vector_N;
+   615.    begin
+   616.       Put_Line("Task 7 started");
+   617.
+   618.       VectorInput(B);
+   619.
+   620.       Task8.SetB(B(3*H+1..N));
+   621.
+   622.       accept SetCZ(C :in Vector_N; Z: in Vector_3H) do
+   623.          C7:=C;
+   624.          Z_3H:=Z;
+   625.       end SetCZ;
+   626.
+   627.       Task4.SetBCZ(B(1..2*H), C7(1..N), Z_3H(1..2*H));
+   628.
+   629.       accept SetMKMOd(MK: in Matrix_N; MO : in Matrix_H; d : in Integer) do
+   630.          MK7:=MK;
+   631.          MO_H:=MO;
+   632.          d7:=d;
+   633.       end SetMKMOd;
+   634.
+   635.       --compute max
+   636.       a7 := Z_3H(2*H+1);
+   637.       for i in 2*H+2..3*H loop
+   638.          if Z_3H(i)>a7 then
+   639.             a7 := Z_3H(i);
+   640.          end if;
+   641.       end loop;
+   642.
+   643.       accept GetMax(a : out Integer) do
+   644.          a:=a7;
+   645.       end GetMax;
+   646.
+   647.       accept SetMax(a: in Integer) do
+   648.          a7 := a;
+   649.       end SetMax;
+   650.
+   651.       --compute
+   652.       for i in 1..H loop
+   653.          for j in 1..N loop
+   654.             cell := 0;
+   655.             for k in 1..N loop
+   656.                cell := cell + MO_H(i)(k)*MK7(k)(j);
+   657.             end loop;
+   658.             MOMK(i)(j) := cell;
+   659.          end loop;
+   660.          cell := 0;
+   661.          for l in 1..N loop
+   662.             cell := cell + C7(l)*MOMK(i)(l);
+   663.          end loop;
+   664.          A(i+2*H) := d7*cell + a7*B(i+2*H);
+   665.       end loop;
+   666.
+   667.       Task4.GetA(A(1..2*H));
+   668.       Task8.GetA(A(3*H+1..N));
+   669.
+   670.       --show results
+   671.       New_Line;
+   672.       Put("A = ");
+   673.       New_Line;
+   674.       VectorOutput(A);
+   675.       New_Line;
+   676.
+   677.       Put_Line("Task 7 finished");
+   678.
+   679.    end Task7;
+   680.
+   681.    task body Task8 is
+   682.       MK8: Matrix_N;
+   683.       C8 : Vector_N;
+   684.       B_6H:Vector_6H;
+   685.       Z_6H:Vector_6H;
+   686.       MO_H:Matrix_H;
+   687.       d8:Integer;
+   688.       a7,a8,a9:Integer;
+   689.       cell:Integer;
+   690.       MOMK:Matrix_N;
+   691.       A_6H:Vector_6H;
+   692.    begin
+   693.       Put_Line("Task 8 started");
+   694.
+   695.       accept SetB(B :in Vector_6H) do
+   696.          B_6H:=B;
+   697.       end SetB;
+   698.
+   699.       accept SetCZ(C :in Vector_N; Z: in Vector_6H) do
+   700.          C8:=C;
+   701.          Z_6H:=Z;
+   702.       end SetCZ;
+   703.
+   704.       Task9.SetB(B_6H(3*H+1..6*H));
+   705.       Task7.SetCZ(C8(1..N), Z_6H(1..3*H));
+   706.       Task5.SetBCZ(B_6H(1..2*H), C8(1..N), Z_6H(4*H+1..6*H));
+   707.
+   708.       accept SetMKMOd(MK: in Matrix_N; MO : in Matrix_H; d : in Integer) do
+   709.          MK8:=MK;
+   710.          MO_H:=MO;
+   711.          d8:=d;
+   712.       end SetMKMOd;
+   713.
+   714.       --compute max
+   715.       a8 := Z_6H(3*H+1);
+   716.       for i in 5*H+2..6*H loop
+   717.          if Z_6H(i)>a8 then
+   718.             a8 := Z_6H(i);
+   719.          end if;
+   720.       end loop;
+   721.
+   722.       Task7.GetMax(a7);
+   723.       if a7>a8 then
+   724.          a8:=a7;
+   725.       end if;
+   726.
+   727.       Task9.GetMax(a9);
+   728.       if a9>a8 then
+   729.          a8:=a9;
+   730.       end if;
+   731.
+   732.       accept GetMax(a : out Integer) do
+   733.          a:=a8;
+   734.       end GetMax;
+   735.
+   736.       accept SetMax(a: in Integer) do
+   737.          a8 := a;
+   738.       end SetMax;
+   739.
+   740.       Task7.SetMax(a8);
+   741.       Task9.SetMax(a8);
+   742.
+   743.       --compute
+   744.       for i in 1..H loop
+   745.          for j in 1..N loop
+   746.             cell := 0;
+   747.             for k in 1..N loop
+   748.                cell := cell + MO_H(i)(k)*MK8(k)(j);
+   749.             end loop;
+   750.             MOMK(i)(j) := cell;
+   751.          end loop;
+   752.          cell := 0;
+   753.          for l in 1..N loop
+   754.             cell := cell + C8(l)*MOMK(i)(l);
+   755.          end loop;
+   756.          A_6H(i+2*H) := d8*cell + a8*B_6H(i+2*H);
+   757.       end loop;
+   758.
+   759.       Task5.GetA(A_6H(1..2*H));
+   760.       Task9.GetA(A_6H(3*H+1..6*H));
+   761.
+   762.       accept GetA(A: out Vector_6H) do
+   763.          A := A_6H;
+   764.       end GetA;
+   765.
+   766.      Put_Line("Task 8 finished");
+   767.    end Task8;
+   768.
+   769.     task body Task9 is
+   770.       MK9: Matrix_N;
+   771.       C : Vector_N;
+   772.       B_3H:Vector_3H;
+   773.       Z:Vector_N;
+   774.       MO_H:Matrix_H;
+   775.       d9:Integer;
+   776.       a9:Integer;
+   777.       cell:Integer;
+   778.       MOMK:Matrix_N;
+   779.       A_3H:Vector_3H;
+   780.     begin
+   781.       Put_Line("Task 9 started");
+   782.
+   783.       VectorInput(C);
+   784.       VectorInput(Z);
+   785.       Z(7):=2;
+   786.
+   787.       Task8.SetCZ(C(1..N), Z(1..6*H));
+   788.
+   789.       accept SetB(B :in Vector_3H) do
+   790.          B_3H:=B;
+   791.       end SetB;
+   792.
+   793.       Task6.SetBCZ(B_3H(1..2*H), C(1..N), Z(6*H+1..8*H));
+   794.
+   795.       accept SetMKMOd(MK: in Matrix_N; MO : in Matrix_H; d : in Integer) do
+   796.          MK9:=MK;
+   797.          MO_H:=MO;
+   798.          d9:=d;
+   799.       end SetMKMOd;
+   800.
+   801.       --compute max
+   802.       a9 := Z(8*H+1);
+   803.       for i in 8*H+2..N loop
+   804.          if Z(i)>a9 then
+   805.             a9 := Z(i);
+   806.          end if;
+   807.       end loop;
+   808.
+   809.       accept GetMax(a : out Integer) do
+   810.          a:=a9;
+   811.       end GetMax;
+   812.
+   813.       accept SetMax(a: in Integer) do
+   814.          a9 := a;
+   815.       end SetMax;
+   816.
+   817.       --compute
+   818.       for i in 1..H loop
+   819.          for j in 1..N loop
+   820.             cell := 0;
+   821.             for k in 1..N loop
+   822.                cell := cell + MO_H(i)(k)*MK9(k)(j);
+   823.             end loop;
+   824.             MOMK(i)(j) := cell;
+   825.          end loop;
+   826.          cell := 0;
+   827.          for l in 1..N loop
+   828.             cell := cell + C(l)*MOMK(i)(l);
+   829.          end loop;
+   830.          A_3H(i+2*H) := d9*cell + a9*B_3H(i+2*H);
+   831.       end loop;
+   832.
+   833.       Task6.GetA(A_3H(1..2*H));
+   834.
+   835.       accept GetA(A: out Vector_3H) do
+   836.          A := A_3H;
+   837.       end GetA;
+   838.
+   839.       Put_Line("Task 9 finished");
+   840.
+   841.     end Task9;
+   842.
+   843.
+   844. begin
+   845.    null;
+   846. end Main;
+
+ 846 lines: No errors

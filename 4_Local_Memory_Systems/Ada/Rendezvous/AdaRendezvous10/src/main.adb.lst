@@ -1,0 +1,329 @@
+GNAT GPL 2016 (20160515-49)
+Copyright 1992-2016, Free Software Foundation, Inc.
+
+Compiling: main.adb
+Source file time stamp: 2017-06-29 22:18:56
+Compiled at: 2017-06-30 01:19:22
+
+     1. with Ada.Text_IO, Ada.Integer_Text_IO;
+     2. use Ada.Text_IO, Ada.Integer_Text_IO;
+     3. ----------------Main program---------------
+     4. --Programming for parallel computer systems
+     5. --Laboratory work #7. Ada. Rendezvous
+     6. --Valeriy Demchik
+     7. --NTUU "KPI"
+     8. --FICT IO-41
+     9. --22.05.2017
+    10. --Task: MA = d*MO + e*MT*MK
+    11. -------------------------------------------
+    12. procedure Main is
+    13.    N: Integer := 12;
+    14.    P: Integer := 6;
+    15.    H: Integer := N / P;
+    16.
+    17.    type Vector is array(Integer range<>) of Integer;
+    18.    subtype Vector_H is Vector(1..H);
+    19.    subtype Vector_2H is Vector(1..2*H);
+    20.    subtype Vector_3H is Vector(1..3*H);
+    21.    subtype Vector_4H is Vector(1..4*H);
+    22.    subtype Vector_5H is Vector(1..5*H);
+    23.    subtype Vector_N is Vector(1..N);
+    24.
+    25.    type Matrix is array(Integer range<>) of Vector_N;
+    26.    subtype Matrix_H is Matrix(1..H);
+    27.    subtype Matrix_2H is Matrix(1..2*H);
+    28.    subtype Matrix_3H is Matrix(1..3*H);
+    29.    subtype Matrix_4H is Matrix(1..4*H);
+    30.    subtype Matrix_5H is Matrix(1..5*H);
+    31.    subtype Matrix_N is Matrix(1..N);
+    32.
+    33.    procedure VectorInput(V: out Vector_N) is
+    34.    begin
+    35.       for i in 1..N loop
+    36.          V(i) := 1;
+    37.       end loop;
+    38.    end VectorInput;
+    39.
+    40.    procedure VectorOutput(V: in Vector_N) is
+    41.    begin
+    42.       if N<=20 then
+    43.          for i in 1..N loop
+    44.             Put(V(i));
+    45.          end loop;
+    46.       end if;
+    47.    end VectorOutput;
+    48.
+    49.    procedure MatrixOutput(M: in Matrix_N) is
+    50.    begin
+    51.       if N<=20 then
+    52.          for i in 1..N loop
+    53.             New_Line;
+    54.             for j in 1..N loop
+    55.                Put(M(i)(j));
+    56.             end loop;
+    57.          end loop;
+    58.       end if;
+    59.    end MatrixOutput;
+    60.
+    61.    procedure MatrixInput(M: out Matrix_N) is
+    62.    begin
+    63.       for col in 1..N loop
+    64.          for row in 1..N loop
+    65.             M(col)(row) := 1;
+    66.          end loop;
+    67.       end loop;
+    68.    end MatrixInput;
+    69.
+    70.    task Task1 is
+    71.       entry SetData(MK :in Matrix_N; MO, MT : in Matrix_H; d, e : in Integer);
+    72.       entry GetResult(MA: out Matrix_H);
+    73.    end Task1;
+    74.
+    75.    task Task2 is
+    76.       entry SetData(MK :in Matrix_N; MO, MT : in Matrix_4H; d, e : in Integer);
+    77.       entry GetResult(MA: out Matrix_4H);
+    78.    end Task2;
+    79.
+    80.    task Task3 is
+    81.       entry SetData(MK :in Matrix_N; MO, MT : in Matrix_2H; d, e : in Integer);
+    82.       entry GetResult(MA: out Matrix_2H);
+    83.    end Task3;
+    84.
+    85.    task Task4 is
+    86.       entry SetData(MK :in Matrix_N; MO, MT : in Matrix_5H; d, e : in Integer);
+    87.       entry GetResult(MA: out Matrix_5H);
+    88.    end Task4;
+    89.
+    90.    task Task5 is
+    91.       entry SetData(MK :in Matrix_N; MO, MT : in Matrix_H; d, e : in Integer);
+    92.       entry GetResult(MA: out Matrix_H);
+    93.    end Task5;
+    94.
+    95.    task Task6 is
+    96.    end Task6;
+    97.
+    98.    task body Task1 is
+    99.       MK1: Matrix_N;
+   100.       MO_H, MT_H, MA_H:Matrix_H;
+   101.       d1, e1, cell:Integer;
+   102.    begin
+   103.       Put_Line("Task 1 started");
+   104.
+   105.       accept SetData(MK :in Matrix_N; MO, MT : in Matrix_H; d, e : in Integer) do
+   106.          MK1:=MK;
+   107.          e1:=e;
+   108.          d1:=d;
+   109.          MO_H:=MO;
+   110.          MT_H:=MT;
+   111.       end SetData;
+   112.
+   113.       --compute
+   114.       for i in 1..H loop
+   115.          for j in 1..N loop
+   116.             cell := 0;
+   117.             for k in 1..N loop
+   118.                cell := cell + MT_H(i)(k)*MK1(k)(j);
+   119.             end loop;
+   120.             MA_H(i)(j) := d1*MO_H(i)(j) + e1*cell;
+   121.          end loop;
+   122.       end loop;
+   123.
+   124.       accept GetResult(MA: out Matrix_H) do
+   125.          MA := MA_H;
+   126.       end GetResult;
+   127.
+   128.       Put_Line("Task 1 finished");
+   129.    end Task1;
+   130.
+   131.    task body Task2 is
+   132.       MK2: Matrix_N;
+   133.       MO_4H, MT_4H, MA_4H:Matrix_4H;
+   134.       d2, e2, cell:Integer;
+   135.    begin
+   136.       Put_Line("Task 2 started");
+   137.
+   138.       accept SetData(MK :in Matrix_N; MO, MT : in Matrix_4H; d, e : in Integer) do
+   139.          MK2:=MK;
+   140.          e2:=e;
+   141.          d2:=d;
+   142.          MO_4H:=MO;
+   143.          MT_4H:=MT;
+   144.       end SetData;
+   145.
+   146.       Task1.SetData(MK2, MO_4H(1..H), MT_4H(1..H), d2, e2);
+   147.       Task3.SetData(MK2, MO_4H(2*H+1..4*H), MT_4H(2*H+1..4*H), d2, e2);
+   148.
+   149.       --compute
+   150.       for i in 1..H loop
+   151.          for j in 1..N loop
+   152.             cell := 0;
+   153.             for k in 1..N loop
+   154.                cell := cell + MT_4H(i+H)(k)*MK2(k)(j);
+   155.             end loop;
+   156.             MA_4H(i+H)(j) := d2*MO_4H(i+H)(j) + e2*cell;
+   157.          end loop;
+   158.       end loop;
+   159.
+   160.       Task1.GetResult(MA_4H(1..H));
+   161.       Task3.GetResult(MA_4H(2*H+1..4*H));
+   162.
+   163.       accept GetResult(MA: out Matrix_4H) do
+   164.          MA := MA_4H;
+   165.       end GetResult;
+   166.
+   167.       Put_Line("Task 2 finished");
+   168.
+   169.    end Task2;
+   170.
+   171.    task body Task3 is
+   172.       MK3: Matrix_N;
+   173.       MO_2H, MT_2H, MA_2H:Matrix_2H;
+   174.       d3, e3, cell:Integer;
+   175.    begin
+   176.       Put_Line("Task 3 started");
+   177.
+   178.       accept SetData(MK :in Matrix_N; MO, MT : in Matrix_2H; d, e : in Integer) do
+   179.          MK3:=MK;
+   180.          e3:=e;
+   181.          d3:=d;
+   182.          MO_2H:=MO;
+   183.          MT_2H:=MT;
+   184.       end SetData;
+   185.
+   186.       Task5.SetData(MK3, MO_2H(H+1..2*H), MT_2H(H+1..2*H), d3, e3);
+   187.
+   188.       --compute
+   189.       for i in 1..H loop
+   190.          for j in 1..N loop
+   191.             cell := 0;
+   192.             for k in 1..N loop
+   193.                cell := cell + MT_2H(i)(k)*MK3(k)(j);
+   194.             end loop;
+   195.             MA_2H(i)(j) := d3*MO_2H(i)(j) + e3*cell;
+   196.          end loop;
+   197.       end loop;
+   198.
+   199.       Task5.GetResult(MA_2H(H+1..2*H));
+   200.
+   201.       accept GetResult(MA: out Matrix_2H) do
+   202.          MA := MA_2H;
+   203.       end GetResult;
+   204.
+   205.       Put_Line("Task 3 finished");
+   206.    end Task3;
+   207.
+   208.    task body Task4 is
+   209.       MK4: Matrix_N;
+   210.       MO_5H, MT_5H, MA_5H:Matrix_5H;
+   211.       d4, e4, cell:Integer;
+   212.    begin
+   213.       Put_Line("Task 4 started");
+   214.
+   215.       accept SetData(MK :in Matrix_N; MO, MT : in Matrix_5H; d, e : in Integer) do
+   216.          MK4:=MK;
+   217.          e4:=e;
+   218.          d4:=d;
+   219.          MO_5H:=MO;
+   220.          MT_5H:=MT;
+   221.       end SetData;
+   222.
+   223.       Task2.SetData(MK4, MO_5H(1..4*H), MT_5H(1..4*H), d4, e4);
+   224.
+   225.       --compute
+   226.       for i in 1..H loop
+   227.          for j in 1..N loop
+   228.             cell := 0;
+   229.             for k in 1..N loop
+   230.                cell := cell + MT_5H(i+4*H)(k)*MK4(k)(j);
+   231.             end loop;
+   232.             MA_5H(i+4*H)(j) := d4*MO_5H(i+4*H)(j) + e4*cell;
+   233.          end loop;
+   234.       end loop;
+   235.
+   236.       Task2.GetResult(MA_5H(1..4*H));
+   237.
+   238.       accept GetResult(MA: out Matrix_5H) do
+   239.          MA := MA_5H;
+   240.       end GetResult;
+   241.
+   242.       Put_Line("Task 4 finished");
+   243.
+   244.    end Task4;
+   245.
+   246.    task body Task5 is
+   247.       MK5: Matrix_N;
+   248.       MO_H, MT_H, MA_H:Matrix_H;
+   249.       d5, e5, cell:Integer;
+   250.    begin
+   251.       Put_Line("Task 5 started");
+   252.
+   253.       accept SetData(MK :in Matrix_N; MO, MT : in Matrix_H; d, e : in Integer) do
+   254.          MK5:=MK;
+   255.          e5:=e;
+   256.          d5:=d;
+   257.          MO_H:=MO;
+   258.          MT_H:=MT;
+   259.       end SetData;
+   260.
+   261.       --compute
+   262.       for i in 1..H loop
+   263.          for j in 1..N loop
+   264.             cell := 0;
+   265.             for k in 1..N loop
+   266.                cell := cell + MT_H(i)(k)*MK5(k)(j);
+   267.             end loop;
+   268.             MA_H(i)(j) := d5*MO_H(i)(j) + e5*cell;
+   269.          end loop;
+   270.       end loop;
+   271.
+   272.       accept GetResult(MA: out Matrix_H) do
+   273.          MA := MA_H;
+   274.       end GetResult;
+   275.
+   276.       Put_Line("Task 5 finished");
+   277.
+   278.    end Task5;
+   279.
+   280.    task body Task6 is
+   281.       MK, MO, MT, MA: Matrix_N;
+   282.       d, e, cell:Integer;
+   283.    begin
+   284.       Put_Line("Task 6 started");
+   285.
+   286.       d:=1;
+   287.       e:=1;
+   288.       MatrixInput(MT);
+   289.       MatrixInput(MK);
+   290.       MatrixInput(MO);
+   291.
+   292.       Task4.SetData(MK, MO(1..5*H), MT(1..5*H), d, e);
+   293.
+   294.       --compute
+   295.       for i in 1..H loop
+   296.          for j in 1..N loop
+   297.             cell := 0;
+   298.             for k in 1..N loop
+   299.                cell := cell + MT(i+5*H)(k)*MK(k)(j);
+   300.             end loop;
+   301.             MA(i+5*H)(j) := d*MO(i+5*H)(j) + e*cell;
+   302.          end loop;
+   303.       end loop;
+   304.
+   305.       Task4.GetResult(MA(1..5*H));
+   306.
+   307.       --show results
+   308.       New_Line;
+   309.       Put("MA = ");
+   310.       New_Line;
+   311.       MatrixOutput(MA);
+   312.       New_Line;
+   313.
+   314.       Put_Line("Task 6 finished");
+   315.
+   316.    end Task6;
+   317.
+   318. begin
+   319.    null;
+   320. end Main;
+
+ 320 lines: No errors

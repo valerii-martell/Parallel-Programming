@@ -1,0 +1,60 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<ClassDiagram MajorVersion="1" MinorVersion="1">
+  <Class Name="CSharp.CoarseGrainedParallelism">
+    <Position X="0.5" Y="0.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>gEQBABAAAAAAACAEAAAAAAAAAAAAAAAAUkgAAAAgIQA=</HashCode>
+      <FileName>CoarseGrainedParallelism.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="CSharp.FineGrainedParallelism">
+    <Position X="5.75" Y="0.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AEQBABAAAAAAAAAEAAAAAAAAAAAAAAAAUkAAAAAAIQA=</HashCode>
+      <FileName>FineGrainedParallelism.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="CSharp.Matrix">
+    <Position X="9.25" Y="0.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAAEAAAAAAAAAgAAABAAEgAQABAEAAA=</HashCode>
+      <FileName>Matrix.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="CSharp.MediumGrainedParallelism">
+    <Position X="2.25" Y="0.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>gEQBABAAAAAAACAEAAAAAAAAAAAAAAAAUkgAAAAgIQA=</HashCode>
+      <FileName>MediumGrainedParallelism.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="CSharp.OneProc">
+    <Position X="7.5" Y="0.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AEQBABAAAAAAAAAEAAAAAAAAAAAAAAAAEgAAAAAAIQA=</HashCode>
+      <FileName>OneProc.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="CSharp.Program">
+    <Position X="12.75" Y="0.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAgAAAIAAAAAAgAAAAAAAAAAAAAIAAAAAAABABAIAA=</HashCode>
+      <FileName>Program.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="CSharp.Vector">
+    <Position X="11" Y="0.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAABAAIAAEEAAQAAAAAAABABAAEAAQABAEAAA=</HashCode>
+      <FileName>Vector.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="CSharp.WithoutCopy">
+    <Position X="4" Y="0.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>gEQBABAAAAAAAAAEAAAAAAAAAAAAAAAAUkgAAAAgIQA=</HashCode>
+      <FileName>WithoutCopy.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Font Name="Segoe UI" Size="9" />
+</ClassDiagram>

@@ -1,0 +1,598 @@
+GNAT GPL 2016 (20160515-49)
+Copyright 1992-2016, Free Software Foundation, Inc.
+
+Compiling: main.adb
+Source file time stamp: 2017-06-15 18:57:08
+Compiled at: 2017-06-15 21:57:52
+
+     1. ------------------------Main program------------------------------
+     2. --Programming for parallel computer systems
+     3. --Laboratory work #5. Ada. Protected Units
+     4. --Valeriy Demchik
+     5. --NTUU "KPI"
+     6. --FICT IO-41
+     7. --15.06.2017
+     8. --Task: A = sort(d*B + max(Z)*T*(MO*MK))
+     9. --
+    10. --=======CM======
+    11. ---|---|---|---|
+    12. ---1---2---3---4
+    13. ---|---|-------|
+    14. --TMO--dZ-----ABMK
+    15. ------------------------------------------------------------------
+    16.
+    17. with Ada.Text_IO, Ada.Integer_text_iO, Ada.Synchronous_Task_Control, Data;
+    18. use Ada.Text_IO, Ada.Integer_text_iO, Ada.Synchronous_Task_Control;
+    19.
+    20. procedure Main is
+    21.
+    22.    N: Integer :=8;
+    23.    P: Integer :=4;
+    24.    H: Integer:= N/P;
+    25.
+    26.    package MonitorsData is new Data(N);
+    27.    use MonitorsData;
+    28.    A, Z, B, T, S, R : Vect;
+    29.    MO, MK : Matrix;
+    30.    d : Integer;
+    31.    ------------------------------------------------------------------
+    32.
+    33.    ------------------------------------------------------------------
+    34.    protected Synchronization is
+    35.       entry WaitForInput;
+    36.       entry WaitForMax;
+    37.       entry WaitForCalc;
+    38.       entry WaitForSort12;
+    39.       entry WaitForSort34;
+    40.       entry WaitForSort;
+    41.       procedure InputSignal;
+    42.       procedure MaxSignal;
+    43.       procedure CalcSignal;
+    44.       procedure Sort12Signal;
+    45.       procedure Sort34Signal;
+    46.       procedure SortSignal;
+    47.
+    48.    private
+    49.       inputFlag:Natural:=0;
+    50.       maxFlag:Natural:=0;
+    51.       calcFlag:Natural:=0;
+    52.       sort12Flag:Natural:=0;
+    53.       sort34Flag:Natural:=0;
+    54.       sortFlag:Natural:=0;
+    55.    end Synchronization;
+    56.
+    57.    protected SharedResourse is
+    58.       procedure SetMax(data : in Integer);
+    59.       procedure SetMK(data : in Matrix);
+    60.       procedure SetT(data : in Vect);
+    61.       procedure Setd(data : in Integer);
+    62.
+    63.       function CopyMax return Integer;
+    64.       function Copyd return Integer;
+    65.       function CopyT return Vect;
+    66.       function CopyMK return Matrix;
+    67.
+    68.    private
+    69.       d: Integer;
+    70.       max: Integer := Integer'First;
+    71.       MK:Matrix;
+    72.       T:Vect;
+    73.
+    74.    end SharedResourse;
+    75.    ------------------------------------------------------------------
+    76.
+    77.    ------------------------------------------------------------------
+    78.    protected body Synchronization is
+    79.
+    80.       procedure InputSignal is
+    81.       begin
+    82.          inputFlag := inputFlag + 1;
+    83.       end InputSignal;
+    84.
+    85.       procedure CalcSignal is
+    86.       begin
+    87.          calcFlag := calcFlag + 1;
+    88.       end CalcSignal;
+    89.
+    90.       procedure MaxSignal is
+    91.       begin
+    92.          maxFlag := maxFlag + 1;
+    93.       end MaxSignal;
+    94.
+    95.       procedure Sort12Signal is
+    96.       begin
+    97.          sort12Flag := sort12Flag + 1;
+    98.       end Sort12Signal;
+    99.
+   100.       procedure Sort34Signal is
+   101.       begin
+   102.          sort34Flag := sort34Flag + 1;
+   103.       end Sort34Signal;
+   104.
+   105.       procedure SortSignal is
+   106.       begin
+   107.          sortFlag := sortFlag + 1;
+   108.       end SortSignal;
+   109.
+   110.       entry WaitForInput
+   111.         when inputFlag = 3 is
+   112.       begin
+   113.          null;
+   114.       end WaitForInput;
+   115.
+   116.       entry WaitForCalc
+   117.         when calcFlag = 4 is
+   118.       begin
+   119.          null;
+   120.       end WaitForCalc;
+   121.
+   122.       entry WaitForMax
+   123.         when maxFlag = 4 is
+   124.       begin
+   125.          null;
+   126.       end WaitForMax;
+   127.
+   128.       entry WaitForSort12
+   129.         when sort12Flag = 1 is
+   130.       begin
+   131.          null;
+   132.       end WaitForSort12;
+   133.
+   134.       entry WaitForSort34
+   135.         when sort34Flag = 1 is
+   136.       begin
+   137.          null;
+   138.       end WaitForSort34;
+   139.
+   140.       entry WaitForSort
+   141.         when sortFlag = 1 is
+   142.       begin
+   143.          null;
+   144.       end WaitForSort;
+   145.
+   146.    end Synchronization;
+   147.
+   148.    protected body SharedResourse is
+   149.
+   150.       procedure SetMax(data : in Integer) is
+   151.       begin
+   152.          if data >= max then
+   153.             max := data;
+   154.          end if;
+   155.       end SetMax;
+   156.
+   157.       procedure Setd(data : in Integer) is
+   158.       begin
+   159.          d := data;
+   160.       end Setd;
+   161.
+   162.       procedure SetMK(data : in Matrix) is
+   163.       begin
+   164.          MK:=data;
+   165.       end SetMK;
+   166.
+   167.       procedure SetT(data : in Vect) is
+   168.       begin
+   169.          T:=data;
+   170.       end SetT;
+   171.
+   172.       function Copyd return Integer is
+   173.       begin
+   174.          return d;
+   175.       end Copyd;
+   176.
+   177.       function CopyMax return Integer is
+   178.       begin
+   179.          return max;
+   180.       end CopyMax;
+   181.
+   182.       function CopyMK return Matrix is
+   183.       begin
+   184.          return MK;
+   185.       end CopyMK;
+   186.
+   187.       function CopyT return Vect is
+   188.       begin
+   189.          return T;
+   190.       end CopyT;
+   191.
+   192.    end SharedResourse;
+   193.    ------------------------------------------------------------------
+   194.
+   195.    ------------------------------------------------------------------
+   196.    procedure StartTasks  is
+   197.       ------------------------------------------------------------------
+   198.
+   199.       ------------------------------------------------------------------
+   200.       task T1 is
+   201.       end T1;
+   202.
+   203.       task body T1 is
+   204.          MK1:Matrix;
+   205.          MOMK1:Matrix;
+   206.          T1:Vect;
+   207.          d1:Integer;
+   208.          a1:Integer;
+   209.          buf:Integer;
+   210.       begin
+   211.
+   212.          Put_Line ("T1 started");
+   213.
+   214.          InputSimpleMatrix(MO);
+   215.          InputSimpleVect(T);
+   216.
+   217.          SharedResourse.SetT(T);
+   218.
+   219.          Synchronization.InputSignal;
+   220.
+   221.          Synchronization.WaitForInput;
+   222.
+   223.          a1 := Max(Z, 1, H);
+   224.
+   225.          SharedResourse.setMax(a1);
+   226.
+   227.          Synchronization.MaxSignal;
+   228.
+   229.          Synchronization.WaitForMax;
+   230.
+   231.          a1 := SharedResourse.CopyMax;
+   232.          MK1 := SharedResourse.CopyMK;
+   233.          d1 := SharedResourse.Copyd;
+   234.          T1 := SharedResourse.CopyT;
+   235.
+   236.          for i in 1..H loop
+   237.             for j in 1..N loop
+   238.                buf :=0;
+   239.                for k in 1..N loop
+   240.                   buf := buf + MO(i,k) * MK1(k,j);
+   241.                end loop;
+   242.                MOMK1(i,j) := buf;
+   243.             end loop;
+   244.             buf := 0;
+   245.             for l in 1..N loop
+   246.                buf := buf + T1(l)*MOMK1(i,l);
+   247.             end loop;
+   248.             S(i) := d1*B(i) + a1*buf;
+   249.          end loop;
+   250.
+   251.          Synchronization.CalcSignal;
+   252.          Synchronization.WaitForCalc;
+   253.
+   254.          --Sort H
+   255.          for i in reverse 1..H loop
+   256.             for j in 1..(i-1) loop
+   257.                if S(j) > S(j+1) then
+   258.                   buf := S(j);
+   259.                   S(j):=S(j+1);
+   260.                   S(j+1):=buf;
+   261.                end if;
+   262.             end loop;
+   263.          end loop;
+   264.
+   265.          Synchronization.Sort12Signal;
+   266.
+   267.          Put_Line ("T1 finished");
+   268.       end T1;
+   269.
+   270.       task T2 is
+   271.       end T2;
+   272.
+   273.       task body T2 is
+   274.          MK2:Matrix;
+   275.          MOMK2:Matrix;
+   276.          T2:Vect;
+   277.          d2:Integer;
+   278.          a2:Integer;
+   279.          buf:Integer;
+   280.          i1, i2, current : Integer;
+   281.       begin
+   282.
+   283.          Put_Line ("T2 started");
+   284.
+   285.          d:=1;
+   286.          InputSimpleVect(Z);
+   287.          --Z(4):=2;
+   288.
+   289.          SharedResourse.Setd(d);
+   290.
+   291.          Synchronization.InputSignal;
+   292.
+   293.          Synchronization.WaitForInput;
+   294.
+   295.          a2 := Max(Z, H+1, 2*H);
+   296.
+   297.          SharedResourse.SetMax(a2);
+   298.
+   299.          Synchronization.MaxSignal;
+   300.
+   301.          Synchronization.WaitForMax;
+   302.
+   303.          a2 := SharedResourse.CopyMax;
+   304.          MK2 := SharedResourse.CopyMK;
+   305.          d2 := SharedResourse.Copyd;
+   306.          T2 := SharedResourse.CopyT;
+   307.
+   308.          for i in H+1..2*H loop
+   309.             for j in 1..N loop
+   310.                buf :=0;
+   311.                for k in 1..N loop
+   312.                   buf := buf + MO(i,k) * MK2(k,j);
+   313.                end loop;
+   314.                MOMK2(i,j) := buf;
+   315.             end loop;
+   316.             buf := 0;
+   317.             for l in 1..N loop
+   318.                buf := buf + T2(l)*MOMK2(i,l);
+   319.             end loop;
+   320.             S(i) := d2*B(i) + a2*buf;
+   321.          end loop;
+   322.
+   323.          Synchronization.CalcSignal;
+   324.          Synchronization.WaitForCalc;
+   325.
+   326.          --Sort H
+   327.          for i in reverse H+1..2*H loop
+   328.             for j in 1..(i-1) loop
+   329.                if S(j) > S(j+1) then
+   330.                   buf := S(j);
+   331.                   S(j):=S(j+1);
+   332.                   S(j+1):=buf;
+   333.                end if;
+   334.             end loop;
+   335.          end loop;
+   336.
+   337.          Synchronization.WaitForSort12;
+   338.
+   339.          --Merge sort
+   340.          i1 := 1;
+   341.          i2 := H+1;
+   342.          current := 1;
+   343.          while i1 <= H and i2 <= 2*H loop
+   344.             if S(i1) > S(i2) then
+   345.                R(current) := S(i2);
+   346.                i2 := i2+1;
+   347.                current := current+1;
+   348.             else
+   349.                R(current) := S(i1);
+   350.                i1 := i1+1;
+   351.                current := current+1;
+   352.             end if;
+   353.          end loop;
+   354.
+   355.          if i1 = H+1 then
+   356.             while i2 <= 2*H loop
+   357.                R(current) := S(i2);
+   358.                i2 := i2+1;
+   359.                current := current+1;
+   360.             end loop;
+   361.          else
+   362.             while i1 <= H loop
+   363.                R(current) := S(i1);
+   364.                i1 := i1+1;
+   365.                current := current+1;
+   366.             end loop;
+   367.          end if;
+   368.
+   369.          Synchronization.SortSignal;
+   370.
+   371.          Put_Line ("T2 finished");
+   372.
+   373.       end T2;
+   374.
+   375.       task T3 is
+   376.       end T3;
+   377.
+   378.       task body T3 is
+   379.          MK3:Matrix;
+   380.          MOMK3:Matrix;
+   381.          T3:Vect;
+   382.          d3:Integer;
+   383.          a3:Integer;
+   384.          buf:Integer;
+   385.       begin
+   386.
+   387.          Put_Line ("T3 started");
+   388.
+   389.          Synchronization.WaitForInput;
+   390.
+   391.          a3 := Max(Z, 2*H+1, 3*H);
+   392.
+   393.          SharedResourse.SetMax(a3);
+   394.
+   395.          Synchronization.MaxSignal;
+   396.
+   397.          Synchronization.WaitForMax;
+   398.
+   399.          a3 := SharedResourse.CopyMax;
+   400.          MK3 := SharedResourse.CopyMK;
+   401.          d3 := SharedResourse.Copyd;
+   402.          T3 := SharedResourse.CopyT;
+   403.
+   404.          for i in 2*H+1..3*H loop
+   405.             for j in 1..N loop
+   406.                buf :=0;
+   407.                for k in 1..N loop
+   408.                   buf := buf + MO(i,k) * MK3(k,j);
+   409.                end loop;
+   410.                MOMK3(i,j) := buf;
+   411.             end loop;
+   412.             buf := 0;
+   413.             for l in 1..N loop
+   414.                buf := buf + T3(l)*MOMK3(i,l);
+   415.             end loop;
+   416.             S(i) := d3*B(i) + a3*buf;
+   417.          end loop;
+   418.
+   419.          Synchronization.CalcSignal;
+   420.          Synchronization.WaitForCalc;
+   421.
+   422.          --Sort H
+   423.          for i in reverse 2*H+1..3*H loop
+   424.             for j in 1..(i-1) loop
+   425.                if S(j) > S(j+1) then
+   426.                   buf := S(j);
+   427.                   S(j):=S(j+1);
+   428.                   S(j+1):=buf;
+   429.                end if;
+   430.             end loop;
+   431.          end loop;
+   432.
+   433.          Synchronization.Sort34Signal;
+   434.
+   435.          Put_Line ("T3 finished");
+   436.       end T3;
+   437.
+   438.       task T4 is
+   439.       end T4;
+   440.
+   441.       task body T4 is
+   442.          MK4:Matrix;
+   443.          MOMK4:Matrix;
+   444.          T4:Vect;
+   445.          d4:Integer;
+   446.          a4:Integer;
+   447.          buf:Integer;
+   448.          i1, i2, current : Integer;
+   449.       begin
+   450.
+   451.          Put_Line ("T4 started");
+   452.
+   453.          InputSimpleMatrix(MK);
+   454.          InputSimpleVect(B);
+   455.          --B(5):=10;
+   456.          --B(2):=5;
+   457.          --B(8):=3;
+   458.
+   459.          SharedResourse.SetMK(MK);
+   460.
+   461.          Synchronization.InputSignal;
+   462.
+   463.          Synchronization.WaitForInput;
+   464.
+   465.          a4 := Max(Z, 3*H+1, 4*H);
+   466.
+   467.          SharedResourse.SetMax(a4);
+   468.
+   469.          Synchronization.MaxSignal;
+   470.
+   471.          Synchronization.WaitForMax;
+   472.
+   473.          a4 := SharedResourse.CopyMax;
+   474.          MK4 := SharedResourse.CopyMK;
+   475.          d4 := SharedResourse.Copyd;
+   476.          T4 := SharedResourse.CopyT;
+   477.
+   478.          for i in 3*H+1..4*H loop
+   479.             for j in 1..N loop
+   480.                buf :=0;
+   481.                for k in 1..N loop
+   482.                   buf := buf + MO(i,k) * MK4(k,j);
+   483.                end loop;
+   484.                MOMK4(i,j) := buf;
+   485.             end loop;
+   486.             buf := 0;
+   487.             for l in 1..N loop
+   488.                buf := buf + T4(l)*MOMK4(i,l);
+   489.             end loop;
+   490.             S(i) := d4*B(i) + a4*buf;
+   491.          end loop;
+   492.
+   493.          Synchronization.CalcSignal;
+   494.          Synchronization.WaitForCalc;
+   495.
+   496.          --Sort H
+   497.          for i in reverse 3*H+1..4*H loop
+   498.             for j in 1..(i-1) loop
+   499.                if S(j) > S(j+1) then
+   500.                   buf := S(j);
+   501.                   S(j):=S(j+1);
+   502.                   S(j+1):=buf;
+   503.                end if;
+   504.             end loop;
+   505.          end loop;
+   506.
+   507.          Synchronization.WaitForSort34;
+   508.
+   509.          --Merge sort
+   510.          i1 := 2*H+1;
+   511.          i2 := 3*H+1;
+   512.          current := 2*H+1;
+   513.          while i1 <= 3*H and i2 <= 4*H loop
+   514.             if S(i1) > S(i2) then
+   515.                R(current) := S(i2);
+   516.                i2 := i2+1;
+   517.                current := current+1;
+   518.             else
+   519.                R(current) := S(i1);
+   520.                i1 := i1+1;
+   521.                current := current+1;
+   522.             end if;
+   523.          end loop;
+   524.
+   525.          if i1 = 3*H+1 then
+   526.             while i2 <= 4*H loop
+   527.                R(current) := S(i2);
+   528.                i2 := i2+1;
+   529.                current := current+1;
+   530.             end loop;
+   531.          else
+   532.             while i1 <= 3*H loop
+   533.                R(current) := S(i1);
+   534.                i1 := i1+1;
+   535.                current := current+1;
+   536.             end loop;
+   537.          end if;
+   538.
+   539.          Synchronization.WaitForSort;
+   540.
+   541.          --Merge sort
+   542.          i1 := 1;
+   543.          i2 := 2*H+1;
+   544.          current := 1;
+   545.          while i1 <= 2*H and i2 <= 4*H loop
+   546.             if R(i1) > R(i2) then
+   547.                A(current) := R(i2);
+   548.                i2 := i2+1;
+   549.                current := current+1;
+   550.             else
+   551.                A(current) := R(i1);
+   552.                i1 := i1+1;
+   553.                current := current+1;
+   554.             end if;
+   555.          end loop;
+   556.
+   557.          if i1 = 2*H+1 then
+   558.             while i2 <= 4*H loop
+   559.                A(current) := R(i2);
+   560.                i2 := i2+1;
+   561.                current := current+1;
+   562.             end loop;
+   563.          else
+   564.             while i1 <= 2*H loop
+   565.                A(current) := R(i1);
+   566.                i1 := i1+1;
+   567.                current := current+1;
+   568.             end loop;
+   569.          end if;
+   570.
+   571.          New_Line;
+   572.          Put_Line("A = ");
+   573.          ShowVect(S);
+   574.          New_Line;
+   575.
+   576.          Put_Line ("T4 finished");
+   577.       end T4;
+   578.
+   579.    begin
+   580.       null;
+   581.    end StartTasks;
+   582.
+   583. begin
+   584.    Put_Line ("Main thread started");
+   585.    StartTasks;
+   586.    Put_Line ("Main thread finished");
+   587.
+   588. end Main;
+   589.
+
+ 589 lines: No errors

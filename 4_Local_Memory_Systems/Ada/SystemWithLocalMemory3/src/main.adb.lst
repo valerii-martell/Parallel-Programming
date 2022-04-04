@@ -1,0 +1,563 @@
+GNAT GPL 2016 (20160515-49)
+Copyright 1992-2016, Free Software Foundation, Inc.
+
+Compiling: main.adb
+Source file time stamp: 2017-05-21 09:55:14
+Compiled at: 2017-05-21 12:55:30
+
+     1. with Ada.Text_IO, Ada.Integer_Text_IO, Ada.Calendar;
+     2. use Ada.Text_IO, Ada.Integer_Text_IO, Ada.Calendar;
+     3. ------------------------Main program------------------------------
+     4. --Programming for parallel computer systems
+     5. --Course work part #2. System with local memory. Ada. Rendezvous
+     6. --Igor Dayko
+     7. --NTUU "KPI"
+     8. --FICT IO-41
+     9. --20.05.2017
+    10. --Task: MA = min(Z)*MO + d*MT*MR
+    11. ------------------------------------------------------------------
+    12. procedure Main is
+    13.    N: Integer := 12;
+    14.    P: Integer := 6;
+    15.    H: Integer := N / P;
+    16.
+    17.    StartTime, FinishTime: Time;
+    18.    DiffTime: Duration;
+    19.
+    20.    type Vector is array(Integer range<>) of Integer;
+    21.    subtype Vector_H is Vector(1..H);
+    22.    subtype Vector_2H is Vector(1..2*H);
+    23.    subtype Vector_3H is Vector(1..3*H);
+    24.    subtype Vector_4H is Vector(1..4*H);
+    25.    subtype Vector_5H is Vector(1..5*H);
+    26.    subtype Vector_N is Vector(1..N);
+    27.
+    28.    type Matrix is array(Integer range<>) of Vector_N;
+    29.    subtype Matrix_H is Matrix(1..H);
+    30.    subtype Matrix_2H is Matrix(1..2*H);
+    31.    subtype Matrix_3H is Matrix(1..3*H);
+    32.    subtype Matrix_4H is Matrix(1..4*H);
+    33.    subtype Matrix_5H is Matrix(1..5*H);
+    34.    subtype Matrix_N is Matrix(1..N);
+    35.
+    36.    procedure VectorInput(V: out Vector_N) is
+    37.    begin
+    38.       for i in 1..N loop
+    39.          V(i) := 1;
+    40.       end loop;
+    41.    end VectorInput;
+    42.
+    43.    procedure VectorOutput(V: in Vector_N) is
+    44.    begin
+    45.       if N<=20 then
+    46.          for i in 1..N loop
+    47.             Put(V(i));
+    48.          end loop;
+    49.       end if;
+    50.    end VectorOutput;
+    51.
+    52.    procedure MatrixOutput(M: in Matrix_N) is
+    53.    begin
+    54.       if N<=20 then
+    55.          for i in 1..N loop
+    56.             New_Line;
+    57.             for j in 1..N loop
+    58.                Put(M(i)(j));
+    59.             end loop;
+    60.          end loop;
+    61.       else
+    62.          Put("Output is too big");
+    63.       end if;
+    64.    end MatrixOutput;
+    65.
+    66.    procedure MatrixInput(M: out Matrix_N) is
+    67.    begin
+    68.       for col in 1..N loop
+    69.          for row in 1..N loop
+    70.             M(col)(row) := 1;
+    71.          end loop;
+    72.       end loop;
+    73.    end MatrixInput;
+    74.
+    75.    task Task1 is
+    76.       entry SetMRd(MR :in Matrix_N; d : in Integer);
+    77.       entry SetMTZ(MT :in Matrix_3H; Z : in Vector_3H);
+    78.       entry GetMin(a: out Integer);
+    79.       entry SetMin(a: in Integer);
+    80.       entry GetMA(MA: out Matrix_H);
+    81.    end Task1;
+    82.    task Task2 is
+    83.       entry SetMTZMO(MT: in Matrix_2H; Z: in Vector_2H; MO : in Matrix_2H);
+    84.       entry GetMA(MA : out Matrix_2H);
+    85.    end Task2;
+    86.    task Task3 is
+    87.       entry SetMRd(MR :in Matrix_N; d : in Integer);
+    88.       entry SetMTZMO(MT: in Matrix_H; Z: in Vector_H; MO : in Matrix_H);
+    89.       entry GetMin(a: out Integer);
+    90.       entry SetMin(a: in Integer);
+    91.       entry GetMA(MA: out Matrix_3H);
+    92.    end Task3;
+    93.    task Task4 is
+    94.       entry SetMRd(MR :in Matrix_N; d : in Integer);
+    95.       entry SetMO(MO :in Matrix_3H);
+    96.       entry GetMin(a: out Integer);
+    97.       entry SetMin(a: in Integer);
+    98.       entry GetMA(MA : out Matrix_H);
+    99.    end Task4;
+   100.    task Task5 is
+   101.       entry SetMRd(MR :in Matrix_N; d : in Integer);
+   102.       entry SetMTZMO(MT: in Matrix_2H; Z: in Vector_2H; MO : in Matrix_2H);
+   103.       entry GetMin(a: out Integer);
+   104.       entry SetMin(a: in Integer);
+   105.       entry GetMA(MA : out Matrix_2H);
+   106.    end Task5;
+   107.    task Task6 is
+   108.       entry SetMRd(MR :in Matrix_N; d : in Integer);
+   109.       entry GetMin(a: out Integer);
+   110.       entry SetMin(a: in Integer);
+   111.       entry SetMTZMO(MT: in Matrix_H; Z: in Vector_H; MO : in Matrix_H);
+   112.    end Task6;
+   113.
+   114.    task body Task1 is
+   115.
+   116.       MR1: Matrix_N;
+   117.
+   118.       Z_3H: Vector_3H;
+   119.       MT_3H:Matrix_3H;
+   120.       MO: Matrix_N;
+   121.
+   122.       MA_H : Matrix_H;
+   123.
+   124.       d1:Integer;
+   125.       cell :Integer;
+   126.       a1: Integer;
+   127.    begin
+   128.       Put_Line("Task 1 started");
+   129.
+   130.       --input data
+   131.       MatrixInput(MO);
+   132.
+   133.       accept SetMRd(MR :in Matrix_N; d : in Integer) do
+   134.          MR1:=MR;
+   135.          d1:=d;
+   136.       end SetMRd;
+   137.
+   138.       Task4.SetMRd(MR1(1..N), d1);
+   139.
+   140.       accept SetMTZ(MT :in Matrix_3H; Z : in Vector_3H) do
+   141.          MT_3H:=MT;
+   142.          Z_3H:=Z;
+   143.       end SetMTZ;
+   144.
+   145.       Task4.SetMO(MO(3*H+1..N));
+   146.
+   147.       Task2.SetMTZMO(MT_3H(H+1..3*H), Z_3H(H+1..3*H), MO(H+1..3*H));
+   148.
+   149.       --compute min
+   150.       a1 := Z_3H(1);
+   151.       for i in 2..H loop
+   152.          if Z_3H(i)<a1 then
+   153.             a1 := Z_3H(i);
+   154.          end if;
+   155.       end loop;
+   156.
+   157.       --send min to T2
+   158.       accept GetMin(a: out Integer) do
+   159.          a := a1;
+   160.       end GetMin;
+   161.
+   162.       --recive min from T2
+   163.       accept SetMin(a: in Integer) do
+   164.          a1 := a;
+   165.       end SetMin;
+   166.
+   167.       --compute
+   168.       for i in 1..H loop
+   169.          for j in 1..N loop
+   170.             cell := 0;
+   171.             for k in 1..N loop
+   172.                cell := cell + MT_3H(i)(k)*MR1(k)(j);
+   173.             end loop;
+   174.             MA_H(i)(j) := d1*cell + a1*MO(i)(j);
+   175.          end loop;
+   176.       end loop;
+   177.
+   178.       accept GetMA(MA : out Matrix_H) do
+   179.          MA:=MA_H(1..H);
+   180.       end GetMA;
+   181.
+   182.       Put_Line("Task 1 finished");
+   183.    end Task1;
+   184.
+   185.    task body Task2 is
+   186.       MR: Matrix_N;
+   187.
+   188.       Z_2H: Vector_2H;
+   189.       MT_2H:Matrix_2H;
+   190.       MO_2H: Matrix_2H;
+   191.
+   192.       MA_2H : Matrix_2H;
+   193.
+   194.       d:Integer;
+   195.       cell :Integer;
+   196.       a1, a2, a3, a5: Integer;
+   197.    begin
+   198.       Put_Line("Task 2 started");
+   199.
+   200.       MatrixInput(MR);
+   201.       d := 1;
+   202.
+   203.       Task5.SetMRd(MR(1..N), d);
+   204.       Task1.SetMRd(MR(1..N), d);
+   205.       Task3.SetMRd(MR(1..N), d);
+   206.
+   207.       accept SetMTZMO(MT: in Matrix_2H; Z: in Vector_2H; MO : in Matrix_2H) do
+   208.          MT_2H := MT;
+   209.          Z_2H:=Z;
+   210.          MO_2H:=MO;
+   211.       end SetMTZMO;
+   212.
+   213.       Task3.SetMTZMO(MT_2H(H+1..2*H), Z_2H(H+1..2*H), MO_2H(H+1..2*H));
+   214.
+   215.       --compute min
+   216.       a2 := Z_2H(1);
+   217.       for i in 2..H loop
+   218.          if Z_2H(i)<a2 then
+   219.             a2 := Z_2H(i);
+   220.          end if;
+   221.       end loop;
+   222.
+   223.       Task1.GetMin(a1);
+   224.       if a1<a2 then
+   225.          a2:=a1;
+   226.       end if;
+   227.
+   228.       Task3.GetMin(a3);
+   229.       if a3<a2 then
+   230.          a2:=a3;
+   231.       end if;
+   232.
+   233.       Task5.GetMin(a5);
+   234.       if a5<a2 then
+   235.          a2:=a5;
+   236.       end if;
+   237.
+   238.       Task5.SetMin(a2);
+   239.       Task1.SetMin(a2);
+   240.       Task3.SetMin(a2);
+   241.
+   242.       --compute
+   243.       for i in 1..H loop
+   244.          for j in 1..N loop
+   245.             cell := 0;
+   246.             for k in 1..N loop
+   247.                cell := cell + MT_2H(i)(k)*MR(k)(j);
+   248.             end loop;
+   249.             MA_2H(i+H)(j) := d*cell + a2*MO_2H(i)(j);
+   250.          end loop;
+   251.       end loop;
+   252.
+   253.       Task1.GetMA(MA_2H(1..H));
+   254.
+   255.       accept GetMA(MA : out Matrix_2H) do
+   256.          MA:=MA_2H(1..2*H);
+   257.       end GetMA;
+   258.
+   259.       Put_Line("Task 2 finished");
+   260.    end Task2;
+   261.
+   262.    task body Task3 is
+   263.       MR3: Matrix_N;
+   264.
+   265.       Z_H: Vector_H;
+   266.       MT_H:Matrix_H;
+   267.       MO_H: Matrix_H;
+   268.
+   269.       MA_3H : Matrix_3H;
+   270.
+   271.       d3:Integer;
+   272.       cell :Integer;
+   273.       a3: Integer;
+   274.    begin
+   275.       Put_Line("Task 3 started");
+   276.
+   277.       accept SetMRd(MR :in Matrix_N; d : in Integer) do
+   278.          MR3:=MR;
+   279.          d3:=d;
+   280.       end SetMRd;
+   281.
+   282.       Task6.SetMRd(MR3(1..N), d3);
+   283.
+   284.       accept SetMTZMO(MT: in Matrix_H; Z: in Vector_H; MO : in Matrix_H) do
+   285.          MT_H := MT;
+   286.          Z_H:=Z;
+   287.          MO_H:=MO;
+   288.       end SetMTZMO;
+   289.
+   290.       --compute min
+   291.       a3 := Z_H(1);
+   292.       for i in 2..H loop
+   293.          if Z_H(i)<a3 then
+   294.             a3 := Z_H(i);
+   295.          end if;
+   296.       end loop;
+   297.
+   298.       --send min to T2
+   299.       accept GetMin(a: out Integer) do
+   300.          a := a3;
+   301.       end GetMin;
+   302.
+   303.       --recive min from T2
+   304.       accept SetMin(a: in Integer) do
+   305.          a3 := a;
+   306.       end SetMin;
+   307.
+   308.       --compute
+   309.       for i in 1..H loop
+   310.          for j in 1..N loop
+   311.             cell := 0;
+   312.             for k in 1..N loop
+   313.                cell := cell + MT_H(i)(k)*MR3(k)(j);
+   314.             end loop;
+   315.             MA_3H(i+2*H)(j) := d3*cell + a3*MO_H(i)(j);
+   316.          end loop;
+   317.       end loop;
+   318.
+   319.       Task2.GetMA(MA_3H(1..2*H));
+   320.
+   321.       accept GetMA(MA: out Matrix_3H) do
+   322.          MA := MA_3H(1..3*H);
+   323.       end GetMA;
+   324.
+   325.       Put_Line("Task 3 finished");
+   326.    end Task3;
+   327.
+   328.    task body Task4 is
+   329.       MR4: Matrix_N;
+   330.
+   331.       Z: Vector_N;
+   332.       MT:Matrix_N;
+   333.       MO_3H: Matrix_3H;
+   334.
+   335.       MA_H : Matrix_H;
+   336.
+   337.       d4:Integer;
+   338.       cell :Integer;
+   339.       a4: Integer;
+   340.    begin
+   341.       Put_Line("Task 4 started");
+   342.
+   343.       MatrixInput(MT);
+   344.       VectorInput(Z);
+   345.       --Z(2):=-1;
+   346.
+   347.       accept SetMRd(MR :in Matrix_N; d : in Integer) do
+   348.          MR4:=MR;
+   349.          d4:=d;
+   350.       end SetMRd;
+   351.
+   352.       Task1.SetMTZ(MT(1..3*H), Z(1..3*H));
+   353.
+   354.       accept SetMO(MO :in Matrix_3H) do
+   355.          MO_3H:=MO;
+   356.       end SetMO;
+   357.
+   358.       Task5.SetMTZMO(MT(4*H+1..N), Z(4*H+1..N), MO_3H(H+1..3*H));
+   359.
+   360.       --compute min
+   361.       a4 := Z(3*H+1);
+   362.       for i in 3*H+2..4*H loop
+   363.          if Z(i)<a4 then
+   364.             a4 := Z(i);
+   365.          end if;
+   366.       end loop;
+   367.
+   368.       --send min to T5
+   369.       accept GetMin(a: out Integer) do
+   370.          a := a4;
+   371.       end GetMin;
+   372.
+   373.       --recive min from T5
+   374.       accept SetMin(a: in Integer) do
+   375.          a4 := a;
+   376.       end SetMin;
+   377.
+   378.      --compute
+   379.       for i in 1..H loop
+   380.          for j in 1..N loop
+   381.             cell := 0;
+   382.             for k in 1..N loop
+   383.                cell := cell + MT(i+3*H)(k)*MR4(k)(j);
+   384.             end loop;
+   385.             MA_H(i)(j) := d4*cell + a4*MO_3H(i)(j);
+   386.          end loop;
+   387.       end loop;
+   388.
+   389.       accept GetMA(MA : out Matrix_H) do
+   390.          MA:=MA_H(1..H);
+   391.       end GetMA;
+   392.
+   393.       Put_Line("Task 4 finished");
+   394.
+   395.    end Task4;
+   396.
+   397.    task body Task5 is
+   398.       MR5: Matrix_N;
+   399.
+   400.       Z_2H: Vector_2H;
+   401.       MT_2H:Matrix_2H;
+   402.       MO_2H: Matrix_2H;
+   403.
+   404.       MA_2H : Matrix_2H;
+   405.
+   406.       d5:Integer;
+   407.       cell :Integer;
+   408.       a4, a5, a6: Integer;
+   409.    begin
+   410.       Put_Line("Task 5 started");
+   411.
+   412.       accept SetMRd(MR :in Matrix_N; d : in Integer) do
+   413.          MR5:=MR;
+   414.          d5:=d;
+   415.       end SetMRd;
+   416.
+   417.       accept SetMTZMO(MT: in Matrix_2H; Z: in Vector_2H; MO : in Matrix_2H) do
+   418.          MT_2H := MT;
+   419.          Z_2H:=Z;
+   420.          MO_2H:=MO;
+   421.       end SetMTZMO;
+   422.
+   423.       Task6.SetMTZMO(MT_2H(H+1..2*H), Z_2H(H+1..2*H), MO_2H(H+1..2*H));
+   424.
+   425.       --compute min
+   426.       a5 := Z_2H(1);
+   427.       for i in 2..H loop
+   428.          if Z_2H(i)<a5 then
+   429.             a5 := Z_2H(i);
+   430.          end if;
+   431.       end loop;
+   432.
+   433.       Task4.GetMin(a4);
+   434.       if a4<a5 then
+   435.          a5:=a4;
+   436.       end if;
+   437.
+   438.       Task6.GetMin(a6);
+   439.       if a6<a5 then
+   440.          a5:=a6;
+   441.       end if;
+   442.
+   443.       --send min to T2
+   444.       accept GetMin(a: out Integer) do
+   445.          a := a5;
+   446.       end GetMin;
+   447.
+   448.       --recive min from T2
+   449.       accept SetMin(a: in Integer) do
+   450.          a5 := a;
+   451.       end SetMin;
+   452.
+   453.       Task4.SetMin(a5);
+   454.       Task6.SetMin(a5);
+   455.
+   456.       --compute
+   457.       for i in 1..H loop
+   458.          for j in 1..N loop
+   459.             cell := 0;
+   460.             for k in 1..N loop
+   461.                cell := cell + MT_2H(i)(k)*MR5(k)(j);
+   462.             end loop;
+   463.             MA_2H(i+H)(j) := d5*cell + a5*MO_2H(i)(j);
+   464.          end loop;
+   465.       end loop;
+   466.
+   467.       Task4.GetMA(MA_2H(1..H));
+   468.
+   469.       accept GetMA(MA : out Matrix_2H) do
+   470.          MA:=MA_2H;
+   471.       end GetMA;
+   472.
+   473.       Put_Line("Task 5 finished");
+   474.    end Task5;
+   475.
+   476.    task body Task6 is
+   477.       MR6: Matrix_N;
+   478.
+   479.       Z_H: Vector_H;
+   480.       MT_H:Matrix_H;
+   481.       MO_H: Matrix_H;
+   482.
+   483.       MA : Matrix_N;
+   484.
+   485.       d6:Integer;
+   486.       cell :Integer;
+   487.       a6: Integer;
+   488.    begin
+   489.       Put_Line("Task 6 started");
+   490.
+   491.       accept SetMRd(MR :in Matrix_N; d : in Integer) do
+   492.          MR6:=MR;
+   493.          d6:=d;
+   494.       end SetMRd;
+   495.
+   496.       accept SetMTZMO(MT: in Matrix_H; Z: in Vector_H; MO : in Matrix_H) do
+   497.          MT_H := MT;
+   498.          Z_H:=Z;
+   499.          MO_H:=MO;
+   500.       end SetMTZMO;
+   501.
+   502.       --compute min
+   503.       a6 := Z_H(1);
+   504.       for i in 2..H loop
+   505.          if Z_H(i)<a6 then
+   506.             a6 := Z_H(i);
+   507.          end if;
+   508.       end loop;
+   509.
+   510.       --send min to T5
+   511.       accept GetMin(a: out Integer) do
+   512.          a := a6;
+   513.       end GetMin;
+   514.
+   515.       --recive min from T5
+   516.       accept SetMin(a: in Integer) do
+   517.          a6 := a;
+   518.       end SetMin;
+   519.
+   520.       --compute
+   521.       for i in 1..H loop
+   522.          for j in 1..N loop
+   523.             cell := 0;
+   524.             for k in 1..N loop
+   525.                cell := cell + MT_H(i)(k)*MR6(k)(j);
+   526.             end loop;
+   527.             MA(i+5*H)(j) := d6*cell + a6*MO_H(i)(j);
+   528.          end loop;
+   529.       end loop;
+   530.
+   531.       Task5.GetMA(MA(3*H+1..5*H));
+   532.       Task3.GetMA(MA(1..3*H));
+   533.
+   534.       --show results
+   535.       New_Line;
+   536.       Put("MA = ");
+   537.       New_Line;
+   538.       MatrixOutput(MA);
+   539.       New_Line;
+   540.
+   541.       Put_Line("Task 6 finished");
+   542.
+   543.       FinishTime := Clock;
+   544.       DiffTime := FinishTime - StartTime;
+   545.
+   546.       Put("Time : ");
+   547.       Put(Integer(DiffTime), 1);
+   548.       Put_Line("");
+   549.    end Task6;
+   550.
+   551. begin
+   552.    StartTime := Clock;
+   553. end Main;
+   554.
+
+ 554 lines: No errors

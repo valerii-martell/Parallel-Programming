@@ -1,0 +1,188 @@
+GNAT GPL 2016 (20160515-49)
+Copyright 1992-2016, Free Software Foundation, Inc.
+
+Compiling: data.adb
+Source file time stamp: 2017-06-15 18:29:02
+Compiled at: 2017-06-29 21:22:55
+
+     1. with Ada.Text_IO, Ada.Integer_Text_IO, Ada.Numerics.Discrete_Random, Ada.Streams;
+     2. use Ada.Text_IO, Ada.Integer_Text_IO, Ada.Streams;
+     3.
+     4. ---------Data package body--------------
+     5. package body Data is
+     6.
+     7.    --Multiply two matrices in range
+     8.    function MultMatr(MA, MB : Matrix; up, down : Integer) return Matrix is
+     9.       Cell : Integer;
+    10.       Result : Matrix;
+    11.    begin
+    12.       for i in up..down loop
+    13.          for j in 1..N loop
+    14.             Cell := 0;
+    15.             for k in 1..N loop
+    16.                Cell := Cell + MA(i,k)*MB(k,j);
+    17.             end loop;
+    18.             Result(i,j):= Cell;
+    19.          end loop;
+    20.       end loop;
+    21.       return Result;
+    22.    end MultMatr;
+    23.
+    24.    --Adding two matrices in range
+    25.    procedure AddMatr(MR : out Matrix; MA, MB : Matrix; up, down : Integer) is
+    26.    begin
+    27.       for i in up..down loop
+    28.          for j in 1..N loop
+    29.             MR(i,j) := MA(i,j) + MB(i,j);
+    30.          end loop;
+    31.       end loop;
+    32.    end AddMatr;
+    33.
+    34.    --Multiply number and matrix in range
+    35.    function MultNumb(a: Integer; MA: Matrix; up, down : Integer) return Matrix is
+    36.       Result : Matrix;
+    37.    begin
+    38.       for i in up..down loop
+    39.          for j in 1..N loop
+    40.             Result(i,j):= a*MA(i,j);
+    41.          end loop;
+    42.       end loop;
+    43.       return Result;
+    44.    end MultNumb;
+    45.
+    46.    function Min(A: Vect; up, down : Integer) return Integer is
+    47.       Result : Integer;
+    48.    begin
+    49.       Result :=A(up);
+    50.       for i in up+1..down loop
+    51.          if A(i) < Result then
+    52.             Result := A(i);
+    53.             end if;
+    54.          end loop;
+    55.       return Result;
+    56.    end Min;
+    57.
+    58.    function Max(A: Vect; up, down : Integer) return Integer is
+    59.       Result : Integer;
+    60.    begin
+    61.       Result :=A(up);
+    62.       for i in up+1..down loop
+    63.          if A(i) > Result then
+    64.             Result := A(i);
+    65.             end if;
+    66.          end loop;
+    67.       return Result;
+    68.    end Max;
+    69.
+    70.    --Reading vector from console
+    71.    procedure ReadVect(A : out Vect) is
+    72.    begin
+    73.       for i in 1..N loop
+    74.          Get(A(i));
+    75.       end loop;
+    76.    end ReadVect;
+    77.
+    78.    --Displaying vector in console
+    79.    procedure ShowVect(A : in Vect) is
+    80.    begin
+    81.       if N<=10 then
+    82.          for i in 1..N loop
+    83.             Put(A(i));
+    84.          end loop;
+    85.       end if;
+    86.    end ShowVect;
+    87.
+    88.    --Reading matrix from console
+    89.    procedure ReadMatr(MA: out Matrix) is
+    90.    begin
+    91.       for i in 1..N loop
+    92.          Put("New row");
+    93.          New_Line;
+    94.          for j in 1..N loop
+    95.             Get(MA(i,j));
+    96.          end loop;
+    97.       end loop;
+    98.    end ReadMatr;
+    99.
+   100.    --Displaying matrix in console
+   101.    procedure ShowMatr(MA: in Matrix) is
+   102.    begin
+   103.       if N<=10 then
+   104.          for i in 1..N loop
+   105.             New_Line;
+   106.             for j in 1..N loop
+   107.                Put(MA(i,j));
+   108.             end loop;
+   109.          end loop;
+   110.       end if;
+   111.    end ShowMatr;
+   112.
+   113.    --Input simple vector
+   114.    procedure InputSimpleVect(A : out Vect) is
+   115.    begin
+   116.       for i in 1..N loop
+   117.           A(i) := 1;
+   118.       end loop;
+   119.    end InputSimpleVect;
+   120.
+   121.    --Input simple matrix
+   122.    procedure InputSimpleMatrix(MA : out Matrix) is
+   123.    begin
+   124.       for i in 1..N loop
+   125.          for j in 1..N loop
+   126.             MA(i,j):= 1;
+   127.          end loop;
+   128.       end loop;
+   129.    end InputSimpleMatrix;
+   130.
+   131. end Data;
+
+Compiling: data.ads
+Source file time stamp: 2017-06-15 18:29:02
+Compiled at: 2017-06-29 21:22:55
+
+     1. -----Data package specification----------
+     2. generic
+     3.    N : in Integer;
+     4. package Data is
+     5.
+     6.      --Definition of private types
+     7.      type Vect is array(1..N) of Integer;
+     8.      type Matrix is array(1..N, 1..N) of Integer;
+     9.
+    10.    --The function for multiply two matrices in range
+    11.    function MultMatr(MA, MB : in Matrix; up, down : in Integer) return Matrix;
+    12.
+    13.    --The function for adding two matrices in range
+    14.    procedure AddMatr(MR : out Matrix; MA, MB : in Matrix; up, down : in Integer);
+    15.
+    16.    --The function for multiply number and matrix in range
+    17.    function MultNumb(a: in Integer; MA: in Matrix; up, down : in Integer) return Matrix;
+    18.
+    19.    function Min(A: in Vect; up, down : in Integer) return Integer;
+    20.
+    21.    function Max(A: in Vect; up, down : in Integer) return Integer;
+    22.
+    23.    --The procedure for reading vector from console
+    24.    procedure ReadVect(A : out Vect);
+    25.
+    26.    --The procedure for displaying vector in console
+    27.    procedure ShowVect(A : in Vect);
+    28.
+    29.    --The procedure for reading matrix from console
+    30.    procedure ReadMatr(MA: out Matrix);
+    31.
+    32.    --The procedure for displaying matrix in console
+    33.    procedure ShowMatr(MA: in Matrix);
+    34.
+    35.    --The procedure for input simple vector
+    36.    procedure InputSimpleVect(A : out Vect);
+    37.
+    38.    --The procedure for input simple matrix
+    39.    procedure InputSimpleMatrix(MA : out Matrix);
+    40.
+    41.
+    42.
+    43. end Data;
+
+ 131 lines: No errors

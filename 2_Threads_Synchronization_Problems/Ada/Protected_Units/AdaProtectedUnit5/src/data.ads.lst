@@ -1,0 +1,52 @@
+GNAT GPL 2016 (20160515-49)
+Copyright 1992-2016, Free Software Foundation, Inc.
+
+Compiling: data.ads
+Source file time stamp: 2017-06-15 18:29:02
+Compiled at: 2017-06-29 23:50:59
+
+     1. -----Data package specification----------
+     2. generic
+     3.    N : in Integer;
+     4. package Data is
+     5.
+     6.      --Definition of private types
+     7.      type Vect is array(1..N) of Integer;
+     8.      type Matrix is array(1..N, 1..N) of Integer;
+     9.
+    10.    --The function for multiply two matrices in range
+    11.    function MultMatr(MA, MB : in Matrix; up, down : in Integer) return Matrix;
+    12.
+    13.    --The function for adding two matrices in range
+    14.    procedure AddMatr(MR : out Matrix; MA, MB : in Matrix; up, down : in Integer);
+    15.
+    16.    --The function for multiply number and matrix in range
+    17.    function MultNumb(a: in Integer; MA: in Matrix; up, down : in Integer) return Matrix;
+    18.
+    19.    function Min(A: in Vect; up, down : in Integer) return Integer;
+    20.
+    21.    function Max(A: in Vect; up, down : in Integer) return Integer;
+    22.
+    23.    --The procedure for reading vector from console
+    24.    procedure ReadVect(A : out Vect);
+    25.
+    26.    --The procedure for displaying vector in console
+    27.    procedure ShowVect(A : in Vect);
+    28.
+    29.    --The procedure for reading matrix from console
+    30.    procedure ReadMatr(MA: out Matrix);
+    31.
+    32.    --The procedure for displaying matrix in console
+    33.    procedure ShowMatr(MA: in Matrix);
+    34.
+    35.    --The procedure for input simple vector
+    36.    procedure InputSimpleVect(A : out Vect);
+    37.
+    38.    --The procedure for input simple matrix
+    39.    procedure InputSimpleMatrix(MA : out Matrix);
+    40.
+    41.
+    42.
+    43. end Data;
+
+ 43 lines: No errors

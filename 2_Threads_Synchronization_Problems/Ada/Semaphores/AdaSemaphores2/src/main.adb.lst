@@ -1,0 +1,222 @@
+GNAT GPL 2016 (20160515-49)
+Copyright 1992-2016, Free Software Foundation, Inc.
+
+Compiling: main.adb
+Source file time stamp: 2017-06-05 20:08:00
+Compiled at: 2017-06-05 23:10:39
+
+     1. with Data, Ada.Text_IO, Ada.Integer_Text_IO, System.Multiprocessors, Ada.Synchronous_Task_Control;
+     2. use Ada.Text_IO, Ada.Integer_Text_IO, System.Multiprocessors, Ada.Synchronous_Task_Control;
+     3.
+     4. ----------------Main program---------------
+     5. --Programming for parallel computer systems
+     6. --Laboratory work #1. Ada. Semaphores
+     7. --Silveistruk Yevhenii
+     8. --NTUU "KPI"
+     9. --FICT IO-41
+    10. --19.02.2017
+    11. --Task: MA = min(MO)*MS + e*(ME*MT)
+    12. -------------------------------------------
+    13.
+    14. procedure Main is
+    15.
+    16.    --Dimension (N)--
+    17.    n : Integer :=4;
+    18.    --Processors count (P)--
+    19.    p : Integer :=2;
+    20.    --Parts of elements (H)--
+    21.    h : Integer := n/p;
+    22.    --Semaphores
+    23.    SU1, SU2, S1, S2, S3, S4, S5 : Suspension_Object;
+    24.    --Initialization package--
+    25.    package SemaphoresData is new Data(n);
+    26.    use SemaphoresData;
+    27.    --Global variables
+    28.    MA, MO, MS, ME, MT : Matrix;
+    29.    e : Integer;
+    30.    a : Integer :=  Integer'Last;
+    31.
+    32.
+    33.    --CPU_0 :CPU_Range:=0;
+    34.    --CPU_1 :CPU_Range:=1;
+    35.
+    36.    procedure Start is
+    37.       task T1 is
+    38.          --pragma Priority(9);
+    39.          --pragma Task_Name ("T1");
+    40.          --pragma Storage_Size(999999999);
+    41.          --pragma CPU (CPU_0);
+    42.       end T1;
+    43.
+    44.       -- Task body
+    45.       task body T1 is
+    46.          MT1 : Matrix;
+    47.          a1, e1, cell : Integer;
+    48.       begin
+    49.          --Start report
+    50.          New_Line;
+    51.          put("T1 started!");
+    52.
+    53.          --Input data
+    54.          InputSimpleMatrix(MO);
+    55.          --MO(3,2):=10;
+    56.          InputSimpleMatrix(ME);
+    57.          InputSimpleMatrix(MT);
+    58.
+    59.          --Signal about the end of data entry
+    60.          Set_True(S1);
+    61.
+    62.          --Wait signal from T2 about end of data entry
+    63.          Suspend_Until_True(S2);
+    64.
+    65.          --min
+    66.          a1:=MO(1,1);
+    67.          for i in 1..H loop
+    68.             for j in 1..N loop
+    69.                if MO(i,j)<a1 then
+    70.                   a1:=MO(i,j);
+    71.                end if;
+    72.             end loop;
+    73.          end loop;
+    74.
+    75.          --Critical point
+    76.          Suspend_Until_True(SU1);
+    77.          if a1 < a then
+    78.             a:=a1;
+    79.          end if;
+    80.          Set_True(SU1);
+    81.
+    82.          --Signal about the end of min
+    83.          Set_True(S3);
+    84.
+    85.          --Wait signal from T2 about end of min
+    86.          Suspend_Until_True(S4);
+    87.
+    88.          --Critical point
+    89.          Suspend_Until_True(SU2);
+    90.          a1 := a;
+    91.          e1 := e;
+    92.          MT1 := MT;
+    93.          Set_True(SU2);
+    94.
+    95.          --Computing
+    96.          for i in 1..H loop
+    97.             for j in 1..N loop
+    98.                cell := 0;
+    99.                for k in 1..N loop
+   100.                   cell := cell + ME(i,k)*MT1(k,j);
+   101.                end loop;
+   102.                MA(i,j) := e1*cell + a1*MS(i,j);
+   103.             end loop;
+   104.          end loop;
+   105.
+   106.          --Signal about end of calculation
+   107.          Set_True(S5);
+   108.
+   109.          --Finish report
+   110.          New_Line;
+   111.          put("T1 finished!");
+   112.
+   113.       end T1;
+   114.
+   115.       task T2 is
+   116.          --pragma Priority(9);
+   117.          --pragma Task_Name ("T2");
+   118.          --pragma Storage_Size(999999999);
+   119.          --pragma CPU (CPU_1);
+   120.       end T2;
+   121.
+   122.       -- Task body
+   123.       task body T2 is
+   124.          MT2 : Matrix;
+   125.          a2, e2, cell : Integer;
+   126.       begin
+   127.          --Start report
+   128.          New_Line;
+   129.          Put("T2 started!");
+   130.
+   131.          --Input data
+   132.          e := 1;
+   133.          InputSimpleMatrix(MS);
+   134.
+   135.          --Signal about the end of data entry
+   136.          Set_True(S2);
+   137.
+   138.          --Wait signal from T1 about end of data entry
+   139.          Suspend_Until_True(S1);
+   140.
+   141.          --min
+   142.          a2:=MO(H+1,1);
+   143.          for i in H+1..N loop
+   144.             for j in 1..N loop
+   145.                if MO(i,j)<a2 then
+   146.                   a2:=MO(i,j);
+   147.                end if;
+   148.             end loop;
+   149.          end loop;
+   150.
+   151.          --Critical point
+   152.          Suspend_Until_True(SU1);
+   153.          if a2 < a then
+   154.             a:=a2;
+   155.          end if;
+   156.          Set_True(SU1);
+   157.
+   158.          --Signal about the end of min
+   159.          Set_True(S4);
+   160.
+   161.          --Wait signal from T2 about end of min
+   162.          Suspend_Until_True(S3);
+   163.
+   164.          --Critical point
+   165.          Suspend_Until_True(SU2);
+   166.          a2 := a;
+   167.          e2 := e;
+   168.          MT2 := MT;
+   169.          Set_True(SU2);
+   170.
+   171.          --Computing
+   172.          for i in H+1..N loop
+   173.             for j in 1..N loop
+   174.                cell := 0;
+   175.                for k in 1..N loop
+   176.                   cell := cell + ME(i,k)*MT2(k,j);
+   177.                end loop;
+   178.                MA(i,j) := e2*cell + a2*MS(i,j);
+   179.             end loop;
+   180.          end loop;
+   181.
+   182.          --Wait signal from T2 about end of calculation
+   183.          Suspend_Until_True(S5);
+   184.
+   185.          -- Show results
+   186.          New_Line;
+   187.          Put("MA = ");
+   188.          showMatr(MA);
+   189.
+   190.          --Finish report
+   191.          New_Line;
+   192.          put("T2 finished!");
+   193.
+   194.       end T2;
+   195.
+   196.    begin
+   197.       Set_True(SU1);
+   198.       Set_True(SU2);
+   199.    end Start;
+   200.
+   201. begin
+   202.    Put("Lab 1");
+   203.    New_Line;
+   204.    Put("Dimension of all vectors and matrix is ");
+   205.    Put(n);
+   206.    Put(" arguments.");
+   207.    if N>10 then
+   208.       New_Line;
+   209.       Put("Results will not be displayed.");
+   210.    end if;
+   211.    Start;
+   212.
+   213. end Main;
+
+ 213 lines: No errors
