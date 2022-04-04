@@ -13,6 +13,7 @@ Several programs from my scientific practise.
 8. MPI via C++ (basic multiprocessing, blocking send/receive, structuring, communicators, synchronization, etc.).   
 9. OpenCL via C# and C++ (for CPU-GPU text recognition problem)
 _**Much deeper work with OpenMP and MPI was carried out on a separate course, repository:**_
+https://github.com/valerii-martell/High-Performance-Computing
 
 **Main problems considered:**
 1. Thread/Process Synchronization Problem
