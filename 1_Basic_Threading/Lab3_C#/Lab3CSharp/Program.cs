@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 using System.Threading;
 
 //          Lab #3
-//    Student: Valeriy Demchik
+//    Student: Valerii Martell
 //    Group:   IO-41
 //    Date:    19/10/2016
 //

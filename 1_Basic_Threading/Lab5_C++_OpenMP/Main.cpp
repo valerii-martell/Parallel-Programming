@@ -1,5 +1,5 @@
 //          Lab #5
-//    Author: Valeriy Demchik
+//    Author: Valerii Martell
 //    Group:   IO-41
 //    Date:    17.11.2016
 //

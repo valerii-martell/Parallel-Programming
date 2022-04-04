@@ -3,7 +3,7 @@ use Ada.Text_IO, Ada.Integer_Text_IO, System.Multiprocessors;
 -------------Main program-----------
 --Parallel and distributed computing
 --Lab 1
---Valeriy Demchik
+--Valerii Martell
 --NTUU "KPI"
 --FICT IO-41
 --19.09.2016

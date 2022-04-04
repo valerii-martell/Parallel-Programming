@@ -4,7 +4,7 @@ import tasks.*;
 
 /**
  *         Lab ¹2
- *    Student: Valeriy Demchik
+ *    Student: Valerii Martell
  *    Group:   IO-41
  *    Date:    28/09/2016
  *

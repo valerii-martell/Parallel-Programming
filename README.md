@@ -18,6 +18,12 @@ _**Much deeper work with OpenMP and MPI was carried out on a separate course, re
 1. Thread/Process Synchronization Problem
 2. Mutual Exclusion Problem
 
+**Applied tasks, the parallel implementation of which was implemented:**
+1. Vector-matrix arithmetic operations
+2. Search for minimum / maximum
+3. Merge sort
+4. Text recognition
+
 **The work of parallel systems is considered and emulated:**
 1. (Scalable) Systems with Shared Memory
 2. (Scalable) Systems with Local Memory

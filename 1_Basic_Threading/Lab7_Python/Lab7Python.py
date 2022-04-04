@@ -3,7 +3,7 @@ import threading
 
 #
 #        Lab #7
-# Author:  Valeriy Demchik
+# Author:  Valerii Martell
 # Group:   IO-41
 # Date:    24.11.2016
 #
