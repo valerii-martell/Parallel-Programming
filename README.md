@@ -41,3 +41,5 @@ Models of fixed and scalable systems are built, practical problems in them are s
 **The basics of separate use of GPU and joint use of CPU and GPU for solving the practical problem of text recognition by an elementary neural network are considered.**
 
 _Based on this, several scientific articles in international journals and theses in international conferences proceedings have been published. See my CV for details:_
+https://www.overleaf.com/read/jbjyzwftsrsn
+https://github.com/valerii-martell/CV_LaTeX
