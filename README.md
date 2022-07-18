@@ -1,5 +1,7 @@
 # Parallel-Programming
 
+[![Codacy Badge](https://app.codacy.com/project/badge/Grade/12f5696553a14426b984689b7cae738a)](https://www.codacy.com/gh/valerii-martell/Parallel-Programming/dashboard?utm_source=github.com&amp;utm_medium=referral&amp;utm_content=valerii-martell/Parallel-Programming&amp;utm_campaign=Badge_Grade)
+
 Programming assignments in university courses "Parallel Programming" and "Parallel Programming for Computer Systems".
 Several programs from my scientific practise.
 
