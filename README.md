@@ -21,7 +21,7 @@ https://github.com/valerii-martell/High-Performance-Computing
 1. Thread/Process Synchronization Problem
 2. Mutual Exclusion Problem
 
-**Applied tasks, the parallel implementation of which was implemented:**
+**Applied tasks, the parallel implementation of which is implemented:**
 1. Vector-matrix arithmetic operations
 2. Search for minimum / maximum
 3. Merge sort
